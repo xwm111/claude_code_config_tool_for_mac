@@ -70,6 +70,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private let configManager = ConfigManager.shared
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // 设置 PATH 环境变量以包含 Node.js 和 Claude CLI 路径
+        setupEnvironment()
+
         // 设置应用图标
         setupDockIcon()
 
@@ -81,6 +84,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         print("🚀 cccfg 应用启动完成")
         print("📁 配置文件位置: \(configManager.getConfigURL().path)")
+    }
+
+    private func setupEnvironment() {
+        // 获取当前 PATH
+        let currentPath = ProcessInfo.processInfo.environment["PATH"] ?? ""
+
+        // 添加 Node.js 路径到 PATH
+        let nodePath = "/Users/weimingxu/.nvm/versions/node/v22.14.0/bin"
+        let newPath = "\(nodePath):\(currentPath)"
+
+        // 设置环境变量
+        setenv("PATH", newPath, 1)
+
+        print("🔧 环境变量设置完成")
+        print("   PATH: \(newPath)")
+        print("   Node.js 路径已添加: \(nodePath)")
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -298,43 +317,163 @@ class CLILauncher: ObservableObject {
             throw LaunchError.iTerm2NotFound
         }
 
-        // 检查Claude CLI是否安装
+        // 检查Claude CLI是否安装 - 使用 PATH 环境变量
+        print("🔍 开始检查 Claude CLI...")
+
+        // 使用 bash 来执行 claude --version，这样会使用 PATH 环境变量
         let task = Process()
-        task.executableURL = URL(fileURLWithPath: "/usr/bin/which")
-        task.arguments = ["claude"]
+        task.executableURL = URL(fileURLWithPath: "/bin/bash")
+        task.arguments = ["-l", "-c", "claude --version"]
         task.standardOutput = Pipe()
+        task.standardError = Pipe()
 
         do {
             try task.run()
             task.waitUntilExit()
 
-            if task.terminationStatus != 0 {
+            let data = (task.standardOutput as? Pipe)?.fileHandleForReading.readDataToEndOfFile() ?? Data()
+            let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+            if task.terminationStatus == 0 && !output.isEmpty {
+                print("✅ Claude CLI 检测成功")
+                print("   版本: \(output)")
+            } else {
+                print("❌ Claude CLI 执行失败，退出码: \(task.terminationStatus)")
                 throw LaunchError.claudeCLINotFound
             }
         } catch {
+            print("❌ Claude CLI 检测失败: \(error)")
             throw LaunchError.claudeCLINotFound
         }
     }
 
     private func launchiTerm2(with config: Config) async throws {
-        let script = createiTerm2Script(with: config)
+        // 首先尝试使用 AppleScript 方法
+        do {
+            let script = createiTerm2Script(with: config)
 
-        // 调试：打印生成的脚本
-        print("=== Generated iTerm2 Script ===")
-        print(script)
-        print("=== End Script ===")
+            // 调试：打印生成的脚本
+            print("=== Generated iTerm2 Script ===")
+            print(script)
+            print("=== End Script ===")
 
-        let appleScript = NSAppleScript(source: script)
+            let appleScript = NSAppleScript(source: script)
 
-        var errorDict: NSDictionary?
-        let result = appleScript?.executeAndReturnError(&errorDict)
+            var errorDict: NSDictionary?
+            let result = appleScript?.executeAndReturnError(&errorDict)
 
-        if let error = errorDict {
-            throw LaunchError.appleScriptFailed(error.description as? String ?? "Unknown AppleScript error")
+            if let error = errorDict {
+                throw LaunchError.appleScriptFailed(error.description as? String ?? "Unknown AppleScript error")
+            }
+
+            // 等待一小段时间确保iTerm2已启动
+            try await Task.sleep(nanoseconds: 1_000_000_000) // 1秒
+        } catch {
+            // 如果 AppleScript 失败，使用备用方法
+            print("AppleScript 方法失败，尝试备用启动方法...")
+            try await launchiTerm2Alternative(with: config)
+        }
+    }
+
+    private func launchiTerm2Alternative(with config: Config) async throws {
+        // 完全不使用 AppleScript 的备用方法
+        print("使用完全备用方法启动...")
+
+        // 1. 创建启动脚本
+        let tempScriptPath = "/tmp/claude_launch_\(UUID().uuidString).sh"
+        var scriptContent = "#!/bin/bash\n"
+        scriptContent += "# Claude Code 启动脚本\n"
+        scriptContent += "# 自动生成的临时脚本\n\n"
+
+        if !config.workingDirectory.isEmpty {
+            scriptContent += "cd \"\(config.workingDirectory)\"\n"
         }
 
-        // 等待一小段时间确保iTerm2已启动
-        try await Task.sleep(nanoseconds: 1_000_000_000) // 1秒
+        scriptContent += "echo '🚀 启动Claude Code CLI...'\n"
+        scriptContent += "echo '配置: \(config.name)'\n"
+        scriptContent += "echo 'API URL: \(config.apiUrl)'\n"
+        scriptContent += "echo '工作目录: \(config.workingDirectory)'\n"
+        scriptContent += "echo ''\n"
+        scriptContent += "export ANTHROPIC_AUTH_TOKEN=\"\(config.apiKey)\"\n"
+        scriptContent += "export ANTHROPIC_BASE_URL=\"\(config.apiUrl)\"\n"
+
+        // 检查 iTerm 是否存在，如果存在则在新窗口中打开
+        scriptContent += "if command -v iTerm2 &> /dev/null; then\n"
+        scriptContent += "    # 使用 iTerm2 的 open 命令在新窗口中打开\n"
+        scriptContent += "    osascript -e 'tell application \"iTerm\" to create window with default profile' 2>/dev/null || {\n"
+        scriptContent += "        open -a iTerm2\n"
+        scriptContent += "        sleep 2\n"
+        scriptContent += "    }\n"
+        scriptContent += "    sleep 1\n"
+        scriptContent += "    # 在新窗口中执行命令\n"
+        scriptContent += "    osascript -e 'tell application \"iTerm\" to tell current session of current window to write text \"exec bash\"' 2>/dev/null || true\n"
+        scriptContent += "    sleep 0.5\n"
+        scriptContent += "    osascript -e 'tell application \"iTerm\" to tell current session of current window to write text \"clear\"' 2>/dev/null || true\n"
+        scriptContent += "    sleep 0.5\n"
+        scriptContent += "    osascript -e 'tell application \"iTerm\" to tell current session of current window to write text \"echo \\\"🚀 Claude Code CLI 已就绪\\\"\"' 2>/dev/null || true\n"
+        scriptContent += "else\n"
+        scriptContent += "    # 回退到 Terminal\n"
+        scriptContent += "    open -a Terminal\n"
+        scriptContent += "    sleep 2\n"
+        scriptContent += "fi\n"
+        scriptContent += "\n"
+        scriptContent += "exec claude\n"
+
+        try scriptContent.write(toFile: tempScriptPath, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: tempScriptPath)
+
+        // 2. 启动 iTerm2（如果存在）
+        let iTermPath = "/Applications/iTerm.app"
+        let iTerm2Path = "/Applications/iTerm2.app"
+
+        if FileManager.default.fileExists(atPath: iTerm2Path) {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+            process.arguments = ["-a", "iTerm2"]
+            try process.run()
+            process.waitUntilExit()
+        } else if FileManager.default.fileExists(atPath: iTermPath) {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+            process.arguments = ["-a", "iTerm"]
+            try process.run()
+            process.waitUntilExit()
+        } else {
+            // 如果没有 iTerm，直接在当前终端启动
+            print("未找到 iTerm，在当前环境中启动...")
+
+            // 设置环境变量并启动 Claude CLI
+            let claudeProcess = Process()
+            claudeProcess.executableURL = URL(fileURLWithPath: "/bin/bash")
+            claudeProcess.arguments = ["-c", "export PATH=\"/Users/weimingxu/.nvm/versions/node/v22.14.0/bin:$PATH\" && export ANTHROPIC_AUTH_TOKEN=\"\(config.apiKey)\" && export ANTHROPIC_BASE_URL=\"\(config.apiUrl)\" && \(config.workingDirectory.isEmpty ? "" : "cd \"\(config.workingDirectory)\" && ")claude"]
+
+            // 设置当前工作目录
+            if !config.workingDirectory.isEmpty {
+                claudeProcess.currentDirectoryURL = URL(fileURLWithPath: config.workingDirectory)
+            }
+
+            try claudeProcess.run()
+            return
+        }
+
+        // 3. 等待 iTerm 启动
+        try await Task.sleep(nanoseconds: 2_000_000_000)
+
+        // 4. 使用系统命令在新窗口中执行脚本
+        let shellProcess = Process()
+        shellProcess.executableURL = URL(fileURLWithPath: "/bin/bash")
+        shellProcess.arguments = ["-c", tempScriptPath]
+
+        if !config.workingDirectory.isEmpty {
+            shellProcess.currentDirectoryURL = URL(fileURLWithPath: config.workingDirectory)
+        }
+
+        try shellProcess.run()
+
+        // 5. 清理临时脚本（延迟清理）
+        DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
+            try? FileManager.default.removeItem(atPath: tempScriptPath)
+        }
     }
 
     private func setupClaudeEnvironment(with config: Config) async throws {
@@ -348,7 +487,7 @@ class CLILauncher: ObservableObject {
         // scriptContent += "unset ANTHROPIC_BASE_URL\n"
         // scriptContent += "unset ANTHROPIC_AUTH_TOKEN\n"
         // 直接使用命令行前缀方式启动
-        let claudeCommand = "ANTHROPIC_AUTH_TOKEN=\"\(config.apiKey)\" ANTHROPIC_BASE_URL=\"\(config.apiUrl)\" claude"
+        let claudeCommand = "export PATH=\"/Users/weimingxu/.nvm/versions/node/v22.14.0/bin:$PATH\" && ANTHROPIC_AUTH_TOKEN=\"\(config.apiKey)\" ANTHROPIC_BASE_URL=\"\(config.apiUrl)\" claude"
 
         if !config.workingDirectory.isEmpty {
             scriptContent += "cd \"\(config.workingDirectory)\"\n"
@@ -415,14 +554,19 @@ class CLILauncher: ObservableObject {
 
         var script = "tell application \"iTerm\"\n"
         script += "    tell current session of current window\n"
+
         script += "        -- 启动Claude CLI\n"
         script += "        write text \"echo '🚀 启动Claude Code CLI...'\"\n"
         script += "        write text \"echo '配置: " + escapedName + "'\"\n"
         script += "        write text \"echo 'API URL: " + escapedUrl + "'\"\n"
         script += "        write text \"echo '工作目录: " + escapedDir + "'\"\n"
-        script += "        write text \"echo '模型: " + escapedModel + "'\"\n"
+
+        if !config.modelName.isEmpty {
+            script += "        write text \"echo '模型: " + escapedModel + "'\"\n"
+        }
+
         script += "        write text \"\"\n"
-        script += "        write text \"ANTHROPIC_AUTH_TOKEN='" + escapedKey + "' ANTHROPIC_BASE_URL='" + escapedUrl + "' claude\"\n"
+        script += "        write text \"export PATH='/Users/weimingxu/.nvm/versions/node/v22.14.0/bin:$PATH' && ANTHROPIC_AUTH_TOKEN='" + escapedKey + "' ANTHROPIC_BASE_URL='" + escapedUrl + "' claude\"\n"
 
         // 等待 Claude Code 启动后，自动设置模型
         if !config.modelName.isEmpty {
@@ -576,6 +720,7 @@ struct cccfgApp: App {
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
+        .handlesExternalEvents(matching: Set(arrayLiteral: "main"))  // 确保只有一个窗口
         .commands {
             CommandGroup(replacing: .newItem) {
                 Button("退出") {
@@ -587,19 +732,45 @@ struct cccfgApp: App {
     }
 }
 
-// 窗口访问器 - 用于获取窗口引用
+// 窗口访问器 - 用于获取窗口引用并设置关闭行为
 struct WindowAccessor: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
         DispatchQueue.main.async {
             if let window = view.window {
                 WindowManager.shared.setMainWindow(window)
+
+                // 设置窗口代理以拦截关闭事件
+                window.delegate = context.coordinator
+
+                // 确保窗口可以关闭按钮（但实际会被拦截）
+                window.standardWindowButton(.closeButton)?.isEnabled = true
             }
         }
         return view
     }
 
-    func updateNSView(_ nsView: NSView, context: Context) {}
+    func updateNSView(_ nsView: NSView, context: Context) {
+        // 确保窗口代理始终设置
+        DispatchQueue.main.async {
+            if let window = nsView.window, window.delegate == nil {
+                window.delegate = context.coordinator
+                WindowManager.shared.setMainWindow(window)
+            }
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    class Coordinator: NSObject, NSWindowDelegate {
+        func windowShouldClose(_ sender: NSWindow) -> Bool {
+            // 拦截关闭事件，隐藏窗口而不是销毁
+            sender.orderOut(nil)
+            return false  // 返回 false 阻止窗口销毁
+        }
+    }
 }
 
 // 主视图
