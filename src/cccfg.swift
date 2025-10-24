@@ -411,6 +411,7 @@ class CLILauncher: ObservableObject {
         let escapedUrl = config.apiUrl.replacingOccurrences(of: "'", with: "'\\''")
         let escapedDir = config.workingDirectory.replacingOccurrences(of: "'", with: "'\\''")
         let escapedKey = config.apiKey.replacingOccurrences(of: "'", with: "'\\''")
+        let escapedModel = config.modelName.replacingOccurrences(of: "'", with: "'\\''")
 
         var script = "tell application \"iTerm\"\n"
         script += "    tell current session of current window\n"
@@ -419,8 +420,16 @@ class CLILauncher: ObservableObject {
         script += "        write text \"echo '配置: " + escapedName + "'\"\n"
         script += "        write text \"echo 'API URL: " + escapedUrl + "'\"\n"
         script += "        write text \"echo '工作目录: " + escapedDir + "'\"\n"
+        script += "        write text \"echo '模型: " + escapedModel + "'\"\n"
         script += "        write text \"\"\n"
         script += "        write text \"ANTHROPIC_AUTH_TOKEN='" + escapedKey + "' ANTHROPIC_BASE_URL='" + escapedUrl + "' claude\"\n"
+
+        // 等待 Claude Code 启动后，自动设置模型
+        if !config.modelName.isEmpty {
+            script += "        delay 2\n"  // 等待2秒让 Claude Code 完全启动
+            script += "        write text \"/model " + escapedModel + "\"\n"
+        }
+
         script += "    end tell\n"
         script += "end tell"
 
@@ -513,10 +522,39 @@ struct Config: Identifiable, Codable {
     var apiUrl: String = "https://api.anthropic.com"
     var apiKey: String = ""
     var workingDirectory: String = ""
+    var modelName: String = ""  // 默认为空，兼容旧配置
     var isDefault: Bool = false
 
     var isValid: Bool {
         !name.isEmpty && !apiUrl.isEmpty && apiUrl.hasPrefix("http") && !apiKey.isEmpty && !workingDirectory.isEmpty
+    }
+
+    // 自定义解码，兼容没有 modelName 字段的旧配置
+    enum CodingKeys: String, CodingKey {
+        case id, name, apiUrl, apiKey, workingDirectory, modelName, isDefault
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        apiUrl = try container.decode(String.self, forKey: .apiUrl)
+        apiKey = try container.decode(String.self, forKey: .apiKey)
+        workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
+        // 兼容旧配置：如果没有 modelName 字段，使用空字符串
+        modelName = (try? container.decode(String.self, forKey: .modelName)) ?? ""
+        isDefault = try container.decode(Bool.self, forKey: .isDefault)
+    }
+
+    // 默认初始化器
+    init() {
+        self.id = UUID()
+        self.name = ""
+        self.apiUrl = "https://api.anthropic.com"
+        self.apiKey = ""
+        self.workingDirectory = ""
+        self.modelName = ""
+        self.isDefault = false
     }
 }
 
@@ -835,6 +873,20 @@ struct ConfigRowView: View {
                             Spacer()
                         }
                     }
+
+                    if !config.modelName.isEmpty {
+                        HStack {
+                            Text("🤖 模型:")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.secondary)
+                            Text(config.modelName)
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                                .monospaced()
+                            Spacer()
+                        }
+                    }
                 }
             }
 
@@ -1062,6 +1114,24 @@ struct ConfigEditView: View {
                             }
                             .buttonStyle(.bordered)
                         }
+                    }
+
+                    // 模型名称
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("模型名称")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            Text("(可选)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        TextField("例如: claude-sonnet-4-5-20250929", text: $config.modelName)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .font(.body)
+                        Text("启动后将自动执行 /model 命令设置此模型，留空则不自动设置")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
 
                     // 默认配置
