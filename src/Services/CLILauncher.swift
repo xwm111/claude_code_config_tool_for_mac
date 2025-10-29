@@ -17,7 +17,7 @@ class CLILauncher: ObservableObject {
 
     private let nodePath = "/Users/weimingxu/.nvm/versions/node/v22.14.0/bin"
 
-    /// Launches a configuration by preparing the command and copying to clipboard
+    /// Launches a configuration by opening iTerm and executing the command
     func launchConfiguration(_ config: Config) {
         guard config.isValid else {
             launchStatus = "❌ 配置无效"
@@ -28,15 +28,40 @@ class CLILauncher: ObservableObject {
         launchStatus = "🚀 正在启动..."
 
         let command = buildLaunchCommand(config)
-
-        // 复制到剪贴板
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(command, forType: .string)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+        
+        // 启动 iTerm 并执行命令
+        launchInITerm(command: command)
+    }
+    
+    /// Launches command in iTerm
+    private func launchInITerm(command: String) {
+        let script = """
+        tell application "iTerm2"
+            if it is running then
+                tell current window to create tab with default profile
+            else
+                activate
+                delay 1
+            end if
+            
+            tell current session of current window
+                write text "\(command.replacingOccurrences(of: "\"", with: "\\\""))"
+            end tell
+        end tell
+        """
+        
+        let appleScript = NSAppleScript(source: script)
+        var error: NSDictionary?
+        
+        appleScript?.executeAndReturnError(&error)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.isLaunching = false
-            self.launchStatus = "✅ 启动命令已复制到剪贴板"
+            if error != nil {
+                self.launchStatus = "❌ 启动失败"
+            } else {
+                self.launchStatus = "✅ 已在 iTerm 中启动"
+            }
         }
     }
 

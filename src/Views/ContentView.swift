@@ -24,6 +24,8 @@ struct ContentView: View {
     @StateObject private var toastManager = ToastManager.shared
     @State private var showingDeleteGroupAlert = false
     @State private var groupToDelete: ConfigGroup?
+    @State private var showingDeleteConfigAlert = false
+    @State private var configToDelete: Config?
 
     private var filteredConfigs: [Config] {
         if let selectedGroupId = selectedGroupId {
@@ -61,120 +63,93 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            // 赛博朋克背景
+            // 增强的赛博朋克背景
             cyberBackground
                 .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                // 赛博朋克标题区域
-                VStack(spacing: 12) {
-                    // 主标题
-                    HStack {
-                        Text("⚡")
-                            .font(.system(size: 28, weight: .black))
-                            .foregroundStyle(AppConstants.Colors.cyberBlue)
+            // 网格叠加层
+            Canvas { context, size in
+                context.stroke(
+                    Path { path in
+                        // 垂直线
+                        for x in stride(from: 0, through: size.width, by: 30) {
+                            path.move(to: CGPoint(x: x, y: 0))
+                            path.addLine(to: CGPoint(x: x, y: size.height))
+                        }
+                        // 水平线
+                        for y in stride(from: 0, through: size.height, by: 30) {
+                            path.move(to: CGPoint(x: 0, y: y))
+                            path.addLine(to: CGPoint(x: size.width, y: y))
+                        }
+                    },
+                    with: .color(.white.opacity(0.03)),
+                    lineWidth: 0.5
+                )
+            }
+            .ignoresSafeArea()
 
-                        Text("CCC CONFIG")
-                            .font(.system(size: 32, weight: .black, design: .monospaced))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [
-                                        AppConstants.Colors.cyberBlue,
-                                        AppConstants.Colors.cyberGreen
-                                    ],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .shadow(color: AppConstants.Colors.cyberBlue, radius: 4, x: 0, y: 0)
+            VStack(spacing: 0) {
+                // 赛博朋克标题区域 - 重新设计
+                VStack(spacing: 16) {
+                    // 顶部状态栏
+                    HStack {
+                        // 系统状态指示器
+                        HStack(spacing: 8) {
+                            Circle()
+                                .fill(AppConstants.Colors.cyberGreen)
+                                .frame(width: 8, height: 8)
+                                .shadow(color: AppConstants.Colors.cyberGreen, radius: 4)
+
+                            Text("SYSTEM ONLINE")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundColor(AppConstants.Colors.cyberGreen)
+                        }
 
                         Spacer()
 
-                        // 退出按钮
+                        // 版本信息
+                        Text("v\(AppConstants.version)")
+                            .font(.system(size: 9, weight: .medium, design: .monospaced))
+                            .foregroundColor(AppConstants.Colors.textSecondary)
+
+                        // 退出按钮 - 重新设计
                         Button(action: {
                             NSApplication.shared.terminate(nil)
                         }) {
-                            Text("⚡ EXIT")
-                                .font(.system(size: 12, weight: .bold, design: .monospaced))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .fill(AppConstants.Colors.cyberRed)
-                                        .opacity(0.8)
-                                )
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 20)
-
-                    // 副标题
-                    Text("◇ CLAUDE CODE CLI 配置管理工具 ◇")
-                        .font(.system(size: 14, weight: .medium, design: .monospaced))
-                        .foregroundColor(AppConstants.Colors.cyberGreen)
-                }
-                .padding(.bottom, 20)
-
-                // 分组选择器
-                CollapsibleGroupSelector(
-                    groups: groupManager.groups,
-                    selectedGroupId: $selectedGroupId,
-                    onAddGroup: { showingAddGroup = true },
-                    onEditGroup: { group in
-                        editingGroup = group
-                        showingAddGroup = true
-                    },
-                    onDeleteGroup: { group in
-                        groupToDelete = group
-                        showingDeleteGroupAlert = true
-                    },
-                    getGroupColor: getGroupColor
-                )
-                .padding(.horizontal, 24)
-                .padding(.bottom, 16)
-
-                // 配置列表
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(filteredConfigs) { config in
-                            ConfigRowView(
-                                config: config,
-                                groupManager: groupManager,
-                                launcher: launcher,
-                                onEdit: {
-                                    editingConfig = config
-                                    showingAddConfig = true
-                                },
-                                onDelete: { deleteConfig(config) },
-                                onCopy: { copyConfigCommand(config) },
-                                getGroupColor: getGroupColor
+                            HStack(spacing: 4) {
+                                Image(systemName: "power")
+                                    .font(.system(size: 10, weight: .bold))
+                                Text("SHUTDOWN")
+                                    .font(.system(size: 10, weight: .black, design: .monospaced))
+                            }
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(AppConstants.Colors.cyberRed)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .stroke(Color.black, lineWidth: 1)
+                                    )
                             )
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                }
+                    .padding(.top, 16)
 
-                Spacer()
+                    // 主标题区域 - 更具冲击力
+                    VStack(spacing: 8) {
+                        HStack(spacing: 0) {
+                            Text("[")
+                                .font(.system(size: 48, weight: .black, design: .monospaced))
+                                .foregroundColor(AppConstants.Colors.cyberRed)
+                                .shadow(color: AppConstants.Colors.cyberRed, radius: 8)
 
-                // 底部操作区域
-                VStack(spacing: 16) {
-                    Button(action: { showingAddConfig = true }) {
-                        HStack {
-                            Text("⚡")
-                                .font(.system(size: 16, weight: .bold))
-                            Text("ADD NEW CONFIG")
-                                .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(
+                            Text("CCC")
+                                .font(.system(size: 56, weight: .black, design: .monospaced))
+                                .foregroundStyle(
                                     LinearGradient(
                                         colors: [
                                             AppConstants.Colors.cyberBlue,
@@ -184,25 +159,238 @@ struct ContentView: View {
                                         endPoint: .trailing
                                     )
                                 )
-                                .opacity(0.8)
+                                .shadow(color: AppConstants.Colors.cyberBlue, radius: 12, x: 0, y: 0)
+
+                            Text("]")
+                                .font(.system(size: 48, weight: .black, design: .monospaced))
+                                .foregroundColor(AppConstants.Colors.cyberRed)
+                                .shadow(color: AppConstants.Colors.cyberRed, radius: 8)
+                        }
+
+                        Text("◇ NEURAL CONFIGURATION INTERFACE ◇")
+                            .font(.system(size: 16, weight: .bold, design: .monospaced))
+                            .foregroundColor(AppConstants.Colors.cyberGreen)
+                            .shadow(color: AppConstants.Colors.cyberGreen, radius: 6)
+
+                        // 分隔线
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        AppConstants.Colors.cyberBlue.opacity(0),
+                                        AppConstants.Colors.cyberBlue,
+                                        AppConstants.Colors.cyberBlue.opacity(0)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(height: 2)
+                            .padding(.horizontal, 100)
+                    }
+                    .padding(.vertical, 24)
+                }
+
+                // 数据控制面板
+                VStack(spacing: 20) {
+                    // 分组选择器 - 重新设计
+                    VStack(spacing: 12) {
+                        HStack {
+                            Text("◆ NODE SELECTION")
+                                .font(.system(size: 14, weight: .black, design: .monospaced))
+                                .foregroundColor(AppConstants.Colors.cyberBlue)
+                                .shadow(color: AppConstants.Colors.cyberBlue, radius: 4)
+
+                            Spacer()
+
+                            Text("▶ ACCESS TERMINAL")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundColor(AppConstants.Colors.cyberGreen)
+                                .shadow(color: AppConstants.Colors.cyberGreen, radius: 3)
+                        }
+
+                        CollapsibleGroupSelector(
+                            groups: groupManager.groups,
+                            configs: configs,
+                            selectedGroupId: $selectedGroupId,
+                            onAddGroup: { showingAddGroup = true },
+                            onEditGroup: { group in
+                                editingGroup = group
+                                showingAddGroup = true
+                            },
+                            onDeleteGroup: { group in
+                                groupToDelete = group
+                                showingDeleteGroupAlert = true
+                            },
+                            getGroupColor: getGroupColor
+                        )
+                    }
+
+                    // 配置列表 - 重新设计框架
+                    VStack(spacing: 12) {
+                        HStack {
+                            Text("◆ CONFIGURATION MATRIX")
+                                .font(.system(size: 14, weight: .black, design: .monospaced))
+                                .foregroundColor(AppConstants.Colors.cyberBlue)
+                                .shadow(color: AppConstants.Colors.cyberBlue, radius: 4)
+
+                            Spacer()
+
+                            Text("ACTIVE NODES: \(filteredConfigs.count)")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundColor(AppConstants.Colors.cyberGreen)
+                                .shadow(color: AppConstants.Colors.cyberGreen, radius: 3)
+                        }
+
+                        // 配置列表容器
+                        ScrollView {
+                            LazyVStack(spacing: 16) {
+                                ForEach(filteredConfigs) { config in
+                                    ConfigRowView(
+                                        config: config,
+                                        groupManager: groupManager,
+                                        launcher: launcher,
+                                        onEdit: {
+                                            editingConfig = config
+                                            showingAddConfig = true
+                                        },
+                                        onDelete: {
+                                            configToDelete = config
+                                            showingDeleteConfigAlert = true
+                                        },
+                                        onCopy: { copyConfigCommand(config) },
+                                        onDuplicate: {
+                                            let newConfig = Config(
+                                                name: "\(config.name) 副本",
+                                                apiUrl: config.apiUrl,
+                                                apiKey: config.apiKey,
+                                                workingDirectory: config.workingDirectory,
+                                                modelName: config.modelName,
+                                                isDefault: false,
+                                                isDangerousMode: config.isDangerousMode,
+                                                groupId: config.groupId
+                                            )
+                                            configs.append(newConfig)
+                                            configManager.saveConfigs(configs)
+                                        },
+                                        getGroupColor: getGroupColor,
+                                        onShowToast: { toastManager.showToast($0) }
+                                    )
+                                }
+                            }
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 16)
+                        }
+                        .frame(maxHeight: 500)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(AppConstants.Colors.panelBackground.opacity(0.3))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: [
+                                                    AppConstants.Colors.cyberBlue.opacity(0.3),
+                                                    AppConstants.Colors.cyberGreen.opacity(0.3)
+                                                ],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 1
+                                        )
+                                )
+                        )
+                    }
+                }
+                .padding(.horizontal, 32)
+
+                Spacer()
+
+                // 操作控制区域
+                VStack(spacing: 20) {
+                    Button(action: { showingAddConfig = true }) {
+                        HStack(spacing: 16) {
+                            Text("[+]")
+                                .font(.system(size: 20, weight: .black, design: .monospaced))
+                                .foregroundColor(.black)
+
+                            Text("CREATE NEW CONFIG")
+                                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                .foregroundColor(.black)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            AppConstants.Colors.cyberGreen,
+                                            AppConstants.Colors.cyberBlue
+                                        ],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.black, lineWidth: 2)
+                                )
                         )
                     }
                     .buttonStyle(PlainButtonStyle())
-                    
+                    .shadow(color: AppConstants.Colors.cyberGreen, radius: 12, x: 0, y: 0)
 
-                    // 开发者信息
-                    VStack(spacing: 4) {
-                        Text("开发者: \(AppConstants.developer)")
-                            .font(.system(size: 11, weight: .medium, design: .monospaced))
-                            .foregroundColor(AppConstants.Colors.textSecondary)
+                    // 系统信息面板
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("SYSTEM_ARCHITECT: \(AppConstants.developer)")
+                                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                .foregroundColor(AppConstants.Colors.textSecondary)
 
-                        Text("联系邮箱: \(AppConstants.developerEmail)")
-                            .font(.system(size: 10, weight: .regular, design: .monospaced))
-                            .foregroundColor(AppConstants.Colors.textSecondary.opacity(0.8))
+                            Text("CONTACT_PROTOCOL: \(AppConstants.developerEmail)")
+                                .font(.system(size: 8, weight: .regular, design: .monospaced))
+                                .foregroundColor(AppConstants.Colors.textSecondary.opacity(0.7))
+                        }
+
+                        Spacer()
+
+                        // 状态指示器
+                        HStack(spacing: 8) {
+                            Circle()
+                                .fill(AppConstants.Colors.cyberGreen)
+                                .frame(width: 6, height: 6)
+                                .shadow(color: AppConstants.Colors.cyberGreen, radius: 2)
+
+                            Text("READY")
+                                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                .foregroundColor(AppConstants.Colors.cyberGreen)
+                        }
                     }
-                    .padding(.bottom, 20)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(AppConstants.Colors.panelBackground.opacity(0.5))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [
+                                                AppConstants.Colors.cyberBlue.opacity(0.3),
+                                                AppConstants.Colors.cyberRed.opacity(0.3)
+                                            ],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        ),
+                                        lineWidth: 1
+                                    )
+                            )
+                    )
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 32)
             }
         }
         .frame(minWidth: AppConstants.windowWidth, minHeight: AppConstants.windowHeight)
@@ -231,9 +419,22 @@ struct ContentView: View {
         } message: {
             Text("确定要删除分组 \"\(groupToDelete?.name ?? "")\" 吗？该分组的所有配置将移到默认分组。")
         }
+        .alert("删除配置", isPresented: $showingDeleteConfigAlert) {
+            Button("取消", role: .cancel) { }
+            Button("删除", role: .destructive) {
+                if let config = configToDelete {
+                    configs.removeAll { $0.id == config.id }
+                    configManager.saveConfigs(configs)
+                    toastManager.showToast("配置已删除")
+                    configToDelete = nil
+                }
+            }
+        } message: {
+            Text("确定要删除配置 \"\(configToDelete?.name ?? "")\" 吗？此操作不可撤销。")
+        }
         .overlay(
             CyberpunkToast(
-                message: "启动命令已复制到剪贴板",
+                message: toastManager.toastMessage,
                 isVisible: toastManager.showToast,
                 onDismiss: {
                     toastManager.dismissToast()
@@ -288,6 +489,7 @@ struct ContentView: View {
 /// Collapsible group selector component
 struct CollapsibleGroupSelector: View {
     let groups: [ConfigGroup]
+    let configs: [Config]
     @Binding var selectedGroupId: UUID?
     let onAddGroup: () -> Void
     let onEditGroup: (ConfigGroup) -> Void
@@ -306,7 +508,7 @@ struct CollapsibleGroupSelector: View {
                             .font(.system(size: 12, weight: .bold, design: .monospaced))
                             .foregroundColor(AppConstants.Colors.cyberGreen)
 
-                        Text(selectedGroupId == nil ? "全部配置(\(groups.reduce(0) { count, _ in count + 1 }))" :
+                        Text(selectedGroupId == nil ? "all groups(\(configs.count))" :
                              (groups.first { $0.id == selectedGroupId }?.name ?? "未知分组"))
                             .font(.system(size: 14, weight: .bold, design: .monospaced))
                             .foregroundColor(.white)
@@ -337,10 +539,8 @@ struct CollapsibleGroupSelector: View {
                 VStack(spacing: 8) {
                     // 全部配置选项
                     GroupOptionRow(
-                        name: "全部配置",
-                        count: groups.reduce(0) { total, group in
-                            total + 1 // 简化计数
-                        },
+                        name: "all groups",
+                        count: configs.count,
                         color: AppConstants.Colors.cyberBlue,
                         isSelected: selectedGroupId == nil,
                         onSelect: { selectedGroupId = nil }
@@ -350,7 +550,7 @@ struct CollapsibleGroupSelector: View {
                     ForEach(groups) { group in
                         GroupOptionRow(
                             name: group.name,
-                            count: 1, // 简化计数
+                            count: configs.filter { $0.groupId == group.id }.count,
                             color: getGroupColor(group.color),
                             isSelected: selectedGroupId == group.id,
                             onSelect: { selectedGroupId = group.id },
@@ -432,104 +632,230 @@ struct ConfigRowView: View {
     let onEdit: () -> Void
     let onDelete: () -> Void
     let onCopy: () -> Void
+    let onDuplicate: () -> Void
     let getGroupColor: (String) -> Color
+    let onShowToast: (String) -> Void
 
     var body: some View {
-        VStack(spacing: 12) {
-            // 配置信息
-            VStack(alignment: .leading, spacing: 8) {
+        ZStack {
+            // 背景 - 渐变边框效果
+            RoundedRectangle(cornerRadius: 16)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.15, green: 0.1, blue: 0.25),
+                            Color(red: 0.1, green: 0.05, blue: 0.2),
+                            Color(red: 0.08, green: 0.03, blue: 0.15)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    AppConstants.Colors.cyberBlue,
+                                    AppConstants.Colors.cyberGreen,
+                                    AppConstants.Colors.cyberRed
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2
+                        )
+                )
+                .shadow(color: AppConstants.Colors.cyberBlue.opacity(0.4), radius: 8, x: 0, y: 0)
+
+            VStack(spacing: 16) {
+                // 顶部状态栏
                 HStack {
-                    // 分组标识
-                    if let group = groupManager.getGroup(by: config.groupId) {
-                        HStack(spacing: 4) {
+                    // 节点标识
+                    HStack(spacing: 8) {
+                        if let group = groupManager.getGroup(by: config.groupId) {
                             Circle()
                                 .fill(getGroupColor(group.color))
-                                .frame(width: 8, height: 8)
-                            Text(group.name)
-                                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                                .frame(width: 10, height: 10)
+                                .shadow(color: getGroupColor(group.color), radius: 4)
+
+                            Text(group.name.uppercased())
+                                .font(.system(size: 10, weight: .black, design: .monospaced))
                                 .foregroundColor(getGroupColor(group.color))
+                                .shadow(color: getGroupColor(group.color), radius: 3)
                         }
                     }
 
                     Spacer()
 
-                    if config.isDangerousMode {
-                        Text("⚠️ 危险模式")
-                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    // 状态指示器
+                    HStack(spacing: 12) {
+                        if config.isDangerousMode {
+                            HStack(spacing: 4) {
+                                Text("⚠")
+                                    .font(.system(size: 10, weight: .bold))
+                                Text("DANGER_MODE")
+                                    .font(.system(size: 9, weight: .black, design: .monospaced))
+                            }
                             .foregroundColor(AppConstants.Colors.cyberRed)
+                            .shadow(color: AppConstants.Colors.cyberRed, radius: 3)
+                        }
+
+                        Circle()
+                            .fill(AppConstants.Colors.cyberGreen)
+                            .frame(width: 6, height: 6)
+                            .shadow(color: AppConstants.Colors.cyberGreen, radius: 2)
+
+                        Text("ACTIVE")
+                            .font(.system(size: 8, weight: .bold, design: .monospaced))
+                            .foregroundColor(AppConstants.Colors.cyberGreen)
                     }
                 }
 
-                Text(config.name)
-                    .font(.system(size: 16, weight: .bold, design: .monospaced))
-                    .foregroundColor(.white)
+                // 主要内容区域
+                VStack(alignment: .leading, spacing: 12) {
+                    // 配置名称
+                    Text(config.name.uppercased())
+                        .font(.system(size: 20, weight: .black, design: .monospaced))
+                        .foregroundColor(.white)
+                        .shadow(color: AppConstants.Colors.cyberBlue, radius: 6)
 
-                Text(config.workingDirectory)
-                    .font(.system(size: 12, design: .monospaced))
-                    .foregroundColor(AppConstants.Colors.textSecondary)
+                    // 路径信息
+                    HStack {
+                        Text("PATH:")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundColor(AppConstants.Colors.cyberGreen)
+
+                        Text(config.workingDirectory)
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(AppConstants.Colors.textSecondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+
+                    // API信息
+                    HStack {
+                        Text("API:")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundColor(AppConstants.Colors.cyberGreen)
+
+                        Text(config.apiUrl)
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(AppConstants.Colors.textSecondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                }
+
+                // 控制按钮区域
+                HStack(spacing: 8) {
+                    Button(action: {
+                        onCopy()
+                    }) {
+                        Text("[COPY_CMD]")
+                            .font(.system(size: 10, weight: .black, design: .monospaced))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(AppConstants.Colors.cyberBlue)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(Color.black, lineWidth: 1)
+                                    )
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
+                    Button(action: {
+                        onDuplicate()
+                        onShowToast("已创建 \(config.name) 副本")
+                    }) {
+                        Text("[DUPLICATE]")
+                            .font(.system(size: 10, weight: .black, design: .monospaced))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(AppConstants.Colors.cyberPurple)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(Color.black, lineWidth: 1)
+                                    )
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
+                    Button(action: {
+                        launcher.launchConfiguration(config)
+                    }) {
+                        HStack(spacing: 4) {
+                            if launcher.isLaunching {
+                                ProgressView()
+                                    .scaleEffect(0.6)
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                            }
+                            
+                            Text(launcher.isLaunching ? "[LAUNCHING...]" : "[LAUNCH]")
+                                .font(.system(size: 10, weight: .black, design: .monospaced))
+                                .foregroundColor(.black)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(launcher.isLaunching ? AppConstants.Colors.cyberBlue : AppConstants.Colors.cyberGreen)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(Color.black, lineWidth: 1)
+                                )
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .disabled(launcher.isLaunching)
+
+                    Button(action: {
+                        onEdit()
+                    }) {
+                        Text("[EDIT]")
+                            .font(.system(size: 10, weight: .black, design: .monospaced))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(AppConstants.Colors.cyberOrange)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(Color.black, lineWidth: 1)
+                                    )
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
+                    Button(action: {
+                        onDelete()
+                    }) {
+                        Text("[DELETE]")
+                            .font(.system(size: 10, weight: .black, design: .monospaced))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(AppConstants.Colors.cyberRed)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(Color.black, lineWidth: 1)
+                                    )
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
             }
-            .padding()
-
-            // 操作按钮
-            HStack(spacing: 12) {
-                Button(action: onCopy) {
-                    Text("COPY")
-                        .font(.system(size: 11, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 6)
-                        .background(
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(AppConstants.Colors.cyberBlue.opacity(0.8))
-                        )
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-
-                Button(action: { launcher.launchConfiguration(config) }) {
-                    Text("LAUNCH")
-                        .font(.system(size: 11, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 6)
-                        .background(
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(AppConstants.Colors.cyberGreen.opacity(0.8))
-                        )
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-
-                Button(action: onEdit) {
-                    Text("EDIT")
-                        .font(.system(size: 11, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 6)
-                        .background(
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(AppConstants.Colors.cyberOrange.opacity(0.8))
-                        )
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-            }
+            .padding(20)
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(AppConstants.Colors.panelBackground.opacity(0.8))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(
-                            LinearGradient(
-                                colors: [AppConstants.Colors.cyberBlue, AppConstants.Colors.cyberGreen],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
-                        )
-                )
-        )
     }
 }
