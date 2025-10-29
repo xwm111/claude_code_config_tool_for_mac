@@ -10,7 +10,7 @@ echo "🚀 开始构建 Claude Code Config 应用..."
 # 定义变量
 APP_NAME="ClaudeCodeConfig"
 BUNDLE_ID="com.claudecode.config"
-VERSION="1.1.0"
+VERSION="1.1.4"
 SOURCE_FILE="src/main.swift"
 TEMP_BUILD_DIR="build"
 APP_DIR="Applications"

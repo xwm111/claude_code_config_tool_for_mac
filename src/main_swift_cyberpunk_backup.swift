@@ -596,7 +596,7 @@ struct ContentView: View {
         }
     }
 
-    // 根据分组颜色字符串获取对应的颜色
+    // MARK: - 赛博朋克色彩方案
     private func getGroupColor(_ colorString: String) -> Color {
         switch colorString {
         case "blue": return Color(red: 0.0, green: 1.0, blue: 1.0) // 霓虹蓝
@@ -609,7 +609,7 @@ struct ContentView: View {
         }
     }
 
-    // 赛博朋克背景渐变
+    // 背景渐变色
     private var cyberBackground: LinearGradient {
         LinearGradient(
             colors: [
@@ -622,11 +622,48 @@ struct ContentView: View {
         )
     }
 
+    // 霓虹发光效果
+    private func neonGlow(color: Color) -> some View {
+        return color.shadow(color: color, radius: 8, x: 0, y: 0)
+                .shadow(color: color.opacity(0.5), radius: 16, x: 0, y: 0)
+    }
+
     var body: some View {
         ZStack {
-            // 赛博朋克背景
+            // 背景层
             cyberBackground
                 .ignoresSafeArea()
+
+            // 网格装饰
+            Canvas { context, size in
+                let gridSize: CGFloat = 30
+                let lineColor = Color(red: 0.0, green: 1.0, blue: 1.0).opacity(0.1)
+
+                // 垂直线
+                for x in stride(from: 0, through: size.width, by: gridSize) {
+                    context.stroke(
+                        Path { path in
+                            path.move(to: CGPoint(x: x, y: 0))
+                            path.addLine(to: CGPoint(x: x, y: size.height))
+                        },
+                        with: .color(lineColor),
+                        lineWidth: 0.5
+                    )
+                }
+
+                // 水平线
+                for y in stride(from: 0, through: size.height, by: gridSize) {
+                    context.stroke(
+                        Path { path in
+                            path.move(to: CGPoint(x: 0, y: y))
+                            path.addLine(to: CGPoint(x: size.width, y: y))
+                        },
+                        with: .color(lineColor),
+                        lineWidth: 0.5
+                    )
+                }
+            }
+            .ignoresSafeArea()
 
             // 主要内容
             VStack(spacing: 30) {
@@ -692,191 +729,427 @@ struct ContentView: View {
                 .padding(.top, 40)
                 .padding(.horizontal, 30)
 
-            // 分组选择器
-            VStack(alignment: .leading, spacing: 12) {
+            // 赛博朋克分组选择器
+            VStack(spacing: 20) {
+                // 分组标题栏
                 HStack {
-                    Text("项目分组")
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("[ PROJECT_CLUSTERS ]")
+                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                        Text("> Select neural pathway cluster")
+                            .font(.system(size: 10, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5).opacity(0.8))
+                    }
+
                     Spacer()
+
+                    // 赛博朋克新建分组按钮
                     Button(action: {
                         showingAddGroup = true
                     }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 14))
-                            Text("新建分组")
-                                .font(.caption)
+                        HStack(spacing: 6) {
+                            Text("◈")
+                                .font(.system(size: 12, weight: .bold))
+                            Text("[NEW_CLUSTER]")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
                         }
-                        .foregroundColor(.blue)
+                        .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(
+                            RoundedRectangle(cornerRadius: 3)
+                                .stroke(Color(red: 0.0, green: 1.0, blue: 1.0), lineWidth: 1)
+                                .background(Color(red: 0.0, green: 1.0, blue: 1.0).opacity(0.05))
+                        )
                     }
                     .buttonStyle(.plain)
+                    .shadow(color: Color(red: 0.0, green: 1.0, blue: 1.0), radius: 6, x: 0, y: 0)
                 }
+                .padding(.horizontal, 30)
 
+                // 分组选择器
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        // 全部配置
+                    HStack(spacing: 12) {
+                        // 全部配置 - 赛博朋克风格
                         Button(action: {
                             selectedGroupId = nil
                         }) {
-                            Text("全部配置 (\(configs.count))")
+                            VStack(spacing: 4) {
+                                HStack(spacing: 6) {
+                                    Text("◉")
+                                        .font(.system(size: 8))
+                                        .foregroundColor(selectedGroupId == nil ? Color(red: 0.0, green: 1.0, blue: 1.0) : Color.gray.opacity(0.5))
+                                    Text("[ALL_CONFIGS]")
+                                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                        .foregroundColor(selectedGroupId == nil ? Color(red: 0.0, green: 1.0, blue: 1.0) : Color.gray.opacity(0.8))
+                                    Text("(\(configs.count))")
+                                        .font(.system(size: 9, design: .monospaced))
+                                        .foregroundColor(selectedGroupId == nil ? Color(red: 0.0, green: 1.0, blue: 0.5) : Color.gray.opacity(0.6))
+                                }
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
-                                .background(selectedGroupId == nil ? Color.blue.opacity(0.2) : Color.gray.opacity(0.1))
-                                .cornerRadius(8)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(
+                                            selectedGroupId == nil ?
+                                            LinearGradient(colors: [Color(red: 0.0, green: 1.0, blue: 1.0), Color(red: 0.0, green: 1.0, blue: 0.5)], startPoint: .leading, endPoint: .trailing) :
+                                            Color.gray.opacity(0.3),
+                                            lineWidth: selectedGroupId == nil ? 2 : 1
+                                        )
+                                        .background(
+                                            selectedGroupId == nil ?
+                                            Color(red: 0.0, green: 1.0, blue: 1.0).opacity(0.1) :
+                                            Color.black.opacity(0.3)
+                                        )
+                                )
+                            }
                         }
                         .buttonStyle(.plain)
+                        .shadow(color: selectedGroupId == nil ? Color(red: 0.0, green: 1.0, blue: 1.0) : Color.clear, radius: 8, x: 0, y: 0)
 
-                        // 各个分组
+                        // 各个分组 - 赛博朋克风格
                         ForEach(groupManager.groups) { group in
                             let groupConfigCount = configs.filter { $0.groupId == group.id }.count
                             Button(action: {
                                 selectedGroupId = group.id
                             }) {
-                                HStack(spacing: 6) {
-                                    Circle()
-                                        .fill(getGroupColor(group.color))
-                                        .frame(width: 8, height: 8)
+                                VStack(spacing: 4) {
+                                    HStack(spacing: 6) {
+                                        // 发光的分组标识
+                                        Circle()
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [getGroupColor(group.color), getGroupColor(group.color).opacity(0.3)],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                            .frame(width: 10, height: 10)
+                                            .shadow(color: getGroupColor(group.color), radius: 6, x: 0, y: 0)
 
-                                    Text("\(group.name) (\(groupConfigCount))")
-                                        .foregroundColor(.primary)
+                                        Text("[\(group.name.uppercased())]")
+                                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                            .foregroundColor(selectedGroupId == group.id ? getGroupColor(group.color) : Color.white.opacity(0.9))
 
-                                    if group.id != ConfigGroup.defaultGroupId {
-                                        Button(action: {
-                                            editingGroup = group
-                                        }) {
-                                            Image(systemName: "pencil.circle")
-                                                .font(.system(size: 12))
-                                                .foregroundColor(.blue)
-                                        }
-                                        .buttonStyle(.plain)
-
-                                        Button(action: {
-                                            groupToDelete = group
-                                            showingDeleteGroupAlert = true
-                                        }) {
-                                            Image(systemName: "minus.circle.fill")
-                                                .font(.system(size: 12))
-                                                .foregroundColor(.red)
-                                        }
-                                        .buttonStyle(.plain)
-                                        .help("删除分组")
+                                        Text("(\(groupConfigCount))")
+                                            .font(.system(size: 9, design: .monospaced))
+                                            .foregroundColor(selectedGroupId == group.id ? getGroupColor(group.color).opacity(0.8) : Color.white.opacity(0.6))
                                     }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(
+                                                selectedGroupId == group.id ?
+                                                getGroupColor(group.color) :
+                                                Color.white.opacity(0.2),
+                                                lineWidth: selectedGroupId == group.id ? 2 : 1
+                                            )
+                                            .background(
+                                                selectedGroupId == group.id ?
+                                                getGroupColor(group.color).opacity(0.15) :
+                                                Color.black.opacity(0.4)
+                                            )
+                                    )
                                 }
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(selectedGroupId == group.id ? getGroupColor(group.color).opacity(0.2) : Color.gray.opacity(0.1))
-                                .cornerRadius(8)
                             }
                             .buttonStyle(.plain)
+                            .shadow(color: selectedGroupId == group.id ? getGroupColor(group.color) : Color.clear, radius: 8, x: 0, y: 0)
+
+                            // 编辑和删除按钮
+                            if group.id != ConfigGroup.defaultGroupId {
+                                HStack(spacing: 8) {
+                                    Button(action: {
+                                        editingGroup = group
+                                    }) {
+                                        Text("◈")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                                    }
+                                    .buttonStyle(.plain)
+                                    .help("Edit Cluster")
+
+                                    Button(action: {
+                                        groupToDelete = group
+                                        showingDeleteGroupAlert = true
+                                    }) {
+                                        Text("◉")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
+                                    }
+                                    .buttonStyle(.plain)
+                                    .help("Delete Cluster")
+                                }
+                                .padding(.leading, 4)
+                            }
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 30)
                 }
             }
-            .padding(.horizontal, 20)
 
-            // 配置列表
+            // 赛博朋克配置列表
             if filteredConfigs.isEmpty {
-                VStack(spacing: 20) {
-                    Image(systemName: "gear.badge.plus")
-                        .font(.system(size: 64))
-                        .foregroundColor(.blue)
-                    Text(configs.isEmpty ? "还没有配置" : "该分组暂无配置")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                    Text("点击下方按钮创建配置")
-                        .font(.body)
-                        .foregroundColor(.secondary)
+                VStack(spacing: 30) {
+                    // 赛博朋克空状态图标
+                    ZStack {
+                        // 外圈发光
+                        Circle()
+                            .stroke(
+                                LinearGradient(colors: [Color(red: 0.0, green: 1.0, blue: 1.0), Color.clear], startPoint: .center, endPoint: .trailing),
+                                lineWidth: 2
+                            )
+                            .frame(width: 80, height: 80)
+                            .shadow(color: Color(red: 0.0, green: 1.0, blue: 1.0), radius: 15, x: 0, y: 0)
+
+                        // 内部图标
+                        Text("◈")
+                            .font(.system(size: 32, weight: .bold))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                    }
+
+                    VStack(spacing: 8) {
+                        Text(configs.isEmpty ? "[ NO_NEURAL_CONFIGS ]" : "[ CLUSTER_EMPTY ]")
+                            .font(.system(size: 18, weight: .bold, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+
+                        Text(configs.isEmpty ? "> Initialize first neural pathway configuration" : "> This cluster contains no active configurations")
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+                            .multilineTextAlignment(.center)
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                ScrollView {
-                    LazyVStack(spacing: 12) {
+                // 赛博朋克配置列表容器
+                VStack(spacing: 16) {
+                    // 列表标题
+                    HStack {
+                        Text("[ ACTIVE_CONFIGURATIONS ]")
+                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                        Spacer()
+                        Text("COUNT: \(filteredConfigs.count)")
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+                    }
+                    .padding(.horizontal, 30)
+
+                    // 配置项列表
+                    LazyVStack(spacing: 16) {
                         ForEach(filteredConfigs) { config in
-                            HStack {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text(config.name)
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
+                            // 赛博朋克配置卡片
+                            VStack(spacing: 0) {
+                                // 配置卡片主体
+                                HStack(spacing: 16) {
+                                    // 左侧状态指示器
+                                    VStack(spacing: 8) {
+                                        // 主状态指示灯
+                                        Circle()
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [Color(red: 0.0, green: 1.0, blue: 0.5), Color(red: 0.0, green: 1.0, blue: 0.5).opacity(0.3)],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                            .frame(width: 12, height: 12)
+                                            .shadow(color: Color(red: 0.0, green: 1.0, blue: 0.5), radius: 8, x: 0, y: 0)
 
-                                    HStack(spacing: 4) {
-                                        if let group = groupManager.groups.first(where: { $0.id == config.groupId }) {
-                                            HStack(spacing: 2) {
-                                                Circle()
-                                                    .fill(getGroupColor(group.color))
-                                                    .frame(width: 4, height: 4)
+                                        // 次状态线
+                                        Rectangle()
+                                            .fill(
+                                                LinearGradient(colors: [Color(red: 0.0, green: 1.0, blue: 0.5), Color.clear], startPoint: .top, endPoint: .bottom)
+                                            )
+                                            .frame(width: 2, height: 40)
+                                    }
 
-                                                Text(group.name)
-                                                    .font(.caption2)
+                                    // 配置信息
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        // 配置名称
+                                        Text(config.name.uppercased())
+                                            .font(.system(size: 16, weight: .bold, design: .monospaced))
+                                            .foregroundColor(Color.white)
+
+                                        // 分组和状态标签
+                                        HStack(spacing: 8) {
+                                            // 分组标签
+                                            if let group = groupManager.groups.first(where: { $0.id == config.groupId }) {
+                                                HStack(spacing: 4) {
+                                                    Circle()
+                                                        .fill(getGroupColor(group.color))
+                                                        .frame(width: 6, height: 6)
+                                                        .shadow(color: getGroupColor(group.color), radius: 4, x: 0, y: 0)
+
+                                                    Text(group.name.uppercased())
+                                                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                                        .foregroundColor(getGroupColor(group.color))
+                                                }
+                                                .padding(.horizontal, 8)
+                                                .padding(.vertical, 2)
+                                                .background(getGroupColor(group.color).opacity(0.1))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 4)
+                                                        .stroke(getGroupColor(group.color).opacity(0.5), lineWidth: 1)
+                                                )
                                             }
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(getGroupColor(group.color).opacity(0.2))
-                                            .cornerRadius(4)
+
+                                            // 危险模式标签
+                                            if config.isDangerousMode {
+                                                HStack(spacing: 3) {
+                                                    Text("⚠")
+                                                        .font(.system(size: 8))
+                                                    Text("DANGER_MODE")
+                                                        .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                                }
+                                                .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
+                                                .padding(.horizontal, 6)
+                                                .padding(.vertical, 2)
+                                                .background(Color(red: 1.0, green: 0.0, blue: 0.5).opacity(0.1))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 4)
+                                                        .stroke(Color(red: 1.0, green: 0.0, blue: 0.5).opacity(0.5), lineWidth: 1)
+                                                )
+                                            }
+
+                                            // 默认配置标签
+                                            if config.isDefault {
+                                                HStack(spacing: 3) {
+                                                    Text("◆")
+                                                        .font(.system(size: 8))
+                                                    Text("DEFAULT")
+                                                        .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                                }
+                                                .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+                                                .padding(.horizontal, 6)
+                                                .padding(.vertical, 2)
+                                                .background(Color(red: 0.0, green: 1.0, blue: 0.5).opacity(0.1))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 4)
+                                                        .stroke(Color(red: 0.0, green: 1.0, blue: 0.5).opacity(0.5), lineWidth: 1)
+                                                )
+                                            }
                                         }
 
-                                        if config.isDangerousMode {
-                                            Text("⚠️ 危险模式")
-                                                .font(.caption2)
-                                                .foregroundColor(.red)
-                                        }
+                                        // 工作目录路径
+                                        Text("> \(config.workingDirectory)")
+                                            .font(.system(size: 10, design: .monospaced))
+                                            .foregroundColor(Color.white.opacity(0.6))
+                                            .lineLimit(1)
 
-                                        if config.isDefault {
-                                            Text("默认")
-                                                .font(.caption2)
-                                                .foregroundColor(.green)
+                                        // 启动状态
+                                        if !launcher.launchStatus.isEmpty && launcher.isLaunching {
+                                            HStack(spacing: 4) {
+                                                Text("◉")
+                                                    .font(.system(size: 8))
+                                                    .foregroundColor(Color(red: 1.0, green: 0.5, blue: 0.0))
+                                                Text(launcher.launchStatus.uppercased())
+                                                    .font(.system(size: 9, design: .monospaced))
+                                                    .foregroundColor(Color(red: 1.0, green: 0.5, blue: 0.0))
+                                            }
                                         }
                                     }
 
-                                    if !launcher.launchStatus.isEmpty && launcher.isLaunching {
-                                        Text(launcher.launchStatus)
-                                            .font(.caption)
-                                            .foregroundColor(.orange)
+                                    Spacer()
+
+                                    // 操作按钮组
+                                    VStack(spacing: 8) {
+                                        // 复制按钮
+                                        Button(action: {
+                                            launcher.copyLaunchCommand(config)
+                                            showCopiedAlert = true
+                                        }) {
+                                            HStack(spacing: 4) {
+                                                Text("◈")
+                                                    .font(.system(size: 10, weight: .bold))
+                                                Text("[COPY]")
+                                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                            }
+                                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 3)
+                                                    .stroke(Color(red: 0.0, green: 1.0, blue: 1.0), lineWidth: 1)
+                                                    .background(Color(red: 0.0, green: 1.0, blue: 1.0).opacity(0.05))
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+                                        .shadow(color: Color(red: 0.0, green: 1.0, blue: 1.0), radius: 4, x: 0, y: 0)
+
+                                        // 启动按钮
+                                        Button(action: {
+                                            launcher.launchConfiguration(config)
+                                        }) {
+                                            HStack(spacing: 4) {
+                                                Text("◉")
+                                                    .font(.system(size: 10, weight: .bold))
+                                                    .foregroundColor(launcher.isLaunching ? Color.gray : Color(red: 0.0, green: 1.0, blue: 0.5))
+                                                Text(launcher.isLaunching ? "[ACTIVE]" : "[LAUNCH]")
+                                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                                    .foregroundColor(launcher.isLaunching ? Color.gray : Color(red: 0.0, green: 1.0, blue: 0.5))
+                                            }
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 3)
+                                                    .stroke(
+                                                        launcher.isLaunching ? Color.gray : Color(red: 0.0, green: 1.0, blue: 0.5),
+                                                        lineWidth: 1
+                                                    )
+                                                    .background(
+                                                        launcher.isLaunching ? Color.gray.opacity(0.05) : Color(red: 0.0, green: 1.0, blue: 0.5).opacity(0.05)
+                                                    )
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+                                        .shadow(color: launcher.isLaunching ? Color.clear : Color(red: 0.0, green: 1.0, blue: 0.5), radius: 4, x: 0, y: 0)
+                                        .disabled(launcher.isLaunching)
+
+                                        // 编辑按钮
+                                        Button(action: {
+                                            editingConfig = config
+                                        }) {
+                                            HStack(spacing: 4) {
+                                                Text("◈")
+                                                    .font(.system(size: 10, weight: .bold))
+                                                Text("[EDIT]")
+                                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                            }
+                                            .foregroundColor(Color(red: 0.8, green: 0.0, blue: 1.0))
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 3)
+                                                    .stroke(Color(red: 0.8, green: 0.0, blue: 1.0), lineWidth: 1)
+                                                    .background(Color(red: 0.8, green: 0.0, blue: 1.0).opacity(0.05))
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+                                        .shadow(color: Color(red: 0.8, green: 0.0, blue: 1.0), radius: 4, x: 0, y: 0)
                                     }
                                 }
 
-                                Spacer()
-
-                                HStack(spacing: 8) {
-                                    Button(action: {
-                                        launcher.copyLaunchCommand(config)
-                                        showCopiedAlert = true
-                                    }) {
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "doc.on.doc")
-                                                .font(.system(size: 12))
-                                            Text("复制")
-                                        }
-                                    }
-                                    .buttonStyle(.bordered)
-                                    .controlSize(.small)
-
-                                    Button(action: {
-                                        launcher.launchConfiguration(config)
-                                    }) {
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "play.circle.fill")
-                                                .font(.system(size: 12))
-                                            Text(launcher.isLaunching ? "启动中..." : "启动")
-                                        }
-                                    }
-                                    .buttonStyle(.borderedProminent)
-                                    .controlSize(.small)
-                                    .disabled(launcher.isLaunching)
-
-                                    Button(action: {
-                                        editingConfig = config
-                                    }) {
-                                        Text("编辑")
-                                    }
-                                    .buttonStyle(.bordered)
-                                    .controlSize(.small)
-                                }
+                                // 底部装饰线
+                                Rectangle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color(red: 0.0, green: 1.0, blue: 1.0), Color(red: 0.0, green: 1.0, blue: 1.0).opacity(0.2), Color.clear],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .frame(height: 1)
                             }
-                            .padding()
-                            .background(Color(NSColor.controlBackgroundColor))
-                            .cornerRadius(8)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                    .background(Color.black.opacity(0.3))
+                            )
+                            .shadow(color: Color.black.opacity(0.3), radius: 8, x: 0, y: 4)
                         }
                     }
                     .padding()
@@ -884,41 +1157,137 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
 
-            // 添加配置按钮
-            Button(action: {
-                showingAddConfig = true
-            }) {
-                HStack {
-                    Image(systemName: "plus")
-                    Text("添加配置")
+            // 赛博朋克添加配置按钮
+            VStack(spacing: 16) {
+                // 装饰线
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.clear, Color(red: 0.0, green: 1.0, blue: 1.0), Color.clear],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(height: 1)
+                    .padding(.horizontal, 100)
+
+                // 添加配置按钮
+                Button(action: {
+                    showingAddConfig = true
+                }) {
+                    HStack(spacing: 12) {
+                        // 左侧装饰
+                        Text("◈")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                            .shadow(color: Color(red: 0.0, green: 1.0, blue: 1.0), radius: 8, x: 0, y: 0)
+
+                        // 按钮文本
+                        VStack(spacing: 2) {
+                            Text("[ CREATE_NEW_CONFIG ]")
+                                .font(.system(size: 16, weight: .bold, design: .monospaced))
+                                .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+
+                            Text("> Initialize new neural pathway configuration")
+                                .font(.system(size: 10, design: .monospaced))
+                                .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+                        }
+
+                        // 右侧装饰
+                        Text("◈")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                            .shadow(color: Color(red: 0.0, green: 1.0, blue: 1.0), radius: 8, x: 0, y: 0)
+                    }
+                    .padding(.horizontal, 30)
+                    .padding(.vertical, 20)
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(
+                                LinearGradient(colors: [Color(red: 0.0, green: 1.0, blue: 1.0), Color(red: 0.0, green: 1.0, blue: 0.5)], startPoint: .leading, endPoint: .trailing),
+                                lineWidth: 2
+                            )
+                            .background(Color(red: 0.0, green: 1.0, blue: 1.0).opacity(0.05))
+                    )
                 }
-                .font(.headline)
-                .foregroundColor(.white)
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.blue)
-                .cornerRadius(10)
+                .buttonStyle(.plain)
+                .shadow(color: Color(red: 0.0, green: 1.0, blue: 1.0), radius: 12, x: 0, y: 0)
+                .padding(.horizontal, 30)
+
+                // 装饰线
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.clear, Color(red: 0.0, green: 1.0, blue: 0.5), Color.clear],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(height: 1)
+                    .padding(.horizontal, 100)
             }
-            .padding(.horizontal, 20)
+            .padding(.bottom, 30)
+
+            // 赛博朋克开发者信息
+            VStack(spacing: 8) {
+                // 上装饰线
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.clear, Color.white.opacity(0.3), Color.clear],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(height: 1)
+                    .padding(.horizontal, 150)
+
+                VStack(spacing: 6) {
+                    HStack(spacing: 8) {
+                        Text("◆")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+                        Text("[ SYSTEM_ARCHITECT ]")
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+                        Text("◇")
+                            .font(.system(size: 8))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+                    }
+
+                    Text("weiming")
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .foregroundColor(Color.white.opacity(0.8))
+
+                    HStack(spacing: 6) {
+                        Text("◈")
+                            .font(.system(size: 8))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                        Text("swimming.xwm@gmail.com")
+                            .font(.system(size: 9, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0).opacity(0.7))
+                        Text("◈")
+                            .font(.system(size: 8))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                    }
+                }
+
+                // 下装饰线
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.clear, Color.white.opacity(0.3), Color.clear],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(height: 1)
+                    .padding(.horizontal, 150)
+            }
             .padding(.bottom, 20)
-
-            // 开发者信息
-            HStack {
-                Spacer()
-                VStack(spacing: 4) {
-                    Text("开发者: weiming")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
-                    Text("联系邮箱: swimming.xwm@gmail.com")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-            }
-            .padding(.bottom, 10)
         }
-        .frame(minWidth: 600, minHeight: 520)
+        .frame(minWidth: 800, minHeight: 600)
         .onAppear {
             loadConfigs()
             loadGroups()
@@ -979,8 +1348,6 @@ struct ContentView: View {
                 Text("确定要删除这个分组吗？")
             }
         }
-        }
-    }
 
     private func loadConfigs() {
         configs = configManager.loadConfigs()
