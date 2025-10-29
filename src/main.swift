@@ -1561,13 +1561,26 @@ struct SimpleGroupEditView: View {
     private let isEditing: Bool
 
     private let availableColors = [
-        ("blue", "蓝色", Color.blue),
-        ("green", "绿色", Color.green),
-        ("red", "红色", Color.red),
-        ("orange", "橙色", Color.orange),
-        ("purple", "紫色", Color.purple),
-        ("pink", "粉色", Color.pink)
+        ("blue", "BLUE", Color(red: 0.0, green: 1.0, blue: 1.0)),
+        ("green", "GREEN", Color(red: 0.0, green: 1.0, blue: 0.5)),
+        ("red", "PINK", Color(red: 1.0, green: 0.0, blue: 0.5)),
+        ("orange", "ORANGE", Color(red: 1.0, green: 0.5, blue: 0.0)),
+        ("purple", "PURPLE", Color(red: 0.8, green: 0.0, blue: 1.0)),
+        ("pink", "NEON", Color(red: 1.0, green: 0.2, blue: 0.8))
     ]
+
+    // 赛博朋克背景渐变
+    private var cyberBackground: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color(red: 0.05, green: 0.0, blue: 0.1),
+                Color(red: 0.1, green: 0.05, blue: 0.15),
+                Color(red: 0.02, green: 0.0, blue: 0.08)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
 
     init(group: ConfigGroup? = nil, onSave: @escaping (ConfigGroup) -> Void) {
         self.editingGroup = group
@@ -1576,95 +1589,205 @@ struct SimpleGroupEditView: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text(isEditing ? "编辑分组" : "新建分组")
-                .font(.title)
-                .fontWeight(.bold)
-                .padding(.top)
+        ZStack {
+            // 赛博朋克背景
+            cyberBackground
+                .ignoresSafeArea()
 
-            VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("分组名称")
-                        .font(.headline)
-                    TextField("例如：工作项目", text: $groupName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .disableAutocorrection(true)
+            VStack(spacing: 0) {
+                // 赛博朋克标题
+                VStack(spacing: 8) {
+                    Text(isEditing ? "[EDIT_GROUP]" : "[NEW_GROUP]")
+                        .font(.system(size: 24, weight: .black, design: .monospaced))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 0.0, green: 1.0, blue: 1.0),
+                                    Color(red: 0.8, green: 0.0, blue: 1.0)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .shadow(color: Color(red: 0.0, green: 1.0, blue: 1.0), radius: 8, x: 0, y: 0)
+
+                    Text(">> GROUP CONFIGURATION PROTOCOL <<")
+                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
                 }
+                .padding(.top, 24)
+                .padding(.bottom, 20)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("分组颜色")
-                        .font(.headline)
-
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 12) {
-                        ForEach(availableColors, id: \.0) { colorValue, colorName, color in
-                            Button(action: {
-                                selectedColor = colorValue
-                            }) {
-                                HStack {
-                                    Circle()
-                                        .fill(color)
-                                        .frame(width: 16, height: 16)
-                                    Text(colorName)
-                                        .font(.body)
-                                    Spacer()
-                                    if selectedColor == colorValue {
-                                        Image(systemName: "checkmark")
-                                            .foregroundColor(color)
-                                    }
-                                }
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(selectedColor == colorValue ? color.opacity(0.1) : Color.gray.opacity(0.05))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(selectedColor == colorValue ? color : Color.gray.opacity(0.3), lineWidth: selectedColor == colorValue ? 2 : 1)
-                                )
-                                .cornerRadius(8)
+                // 主要内容区域
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        // 分组名称字段
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack(spacing: 8) {
+                                Text("◆")
+                                    .font(.system(size: 12, weight: .black, design: .monospaced))
+                                    .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
+                                Text("GROUP_NAME")
+                                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                    .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
                             }
-                            .buttonStyle(.plain)
+                            TextField("ENTER_GROUP_NAME", text: $groupName)
+                                .font(.system(size: 13, design: .monospaced))
+                                .foregroundColor(Color.black)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color(red: 0.0, green: 1.0, blue: 1.0), lineWidth: 1)
+                                        .background(Color(red: 0.9, green: 0.9, blue: 0.95))
+                                )
+                                .disableAutocorrection(true)
+                        }
+
+                        // 分组颜色选择区域
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack(spacing: 8) {
+                                Text("◆")
+                                    .font(.system(size: 12, weight: .black, design: .monospaced))
+                                    .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
+                                Text("GROUP_COLOR")
+                                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                    .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                            }
+
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 12) {
+                                ForEach(availableColors, id: \.0) { colorValue, colorName, color in
+                                    Button(action: {
+                                        selectedColor = colorValue
+                                    }) {
+                                        HStack(spacing: 8) {
+                                            Circle()
+                                                .fill(color)
+                                                .frame(width: 16, height: 16)
+                                            Text(colorName)
+                                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                                .foregroundColor(Color.white)
+                                            Spacer()
+                                            if selectedColor == colorValue {
+                                                Text("✓")
+                                                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                                    .foregroundColor(color)
+                                            }
+                                        }
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 8)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .fill(selectedColor == colorValue ? color.opacity(0.15) : Color(red: 0.1, green: 0.1, blue: 0.15).opacity(0.8))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 8)
+                                                        .stroke(selectedColor == colorValue ? color : Color(red: 0.5, green: 0.5, blue: 0.6), lineWidth: selectedColor == colorValue ? 2 : 1)
+                                                )
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
                         }
                     }
+                    .padding(.horizontal, 20)
                 }
-            }
-            .padding(20)
 
-            Spacer()
+                Spacer()
 
-            HStack(spacing: 20) {
-                Button("取消") {
-                    presentationMode.wrappedValue.dismiss()
-                }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(10)
-
-                Button(isEditing ? "更新" : "创建") {
-                    let newGroup: ConfigGroup
-                    if let group = editingGroup {
-                        // 编辑模式：保留原有ID和其他属性
-                        newGroup = ConfigGroup(
-                            id: group.id,
-                            name: groupName,
-                            color: selectedColor,
-                            sortOrder: group.sortOrder
+                // 赛博朋克按钮组
+                HStack(spacing: 16) {
+                    // 取消按钮
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        VStack(spacing: 4) {
+                            Text("◆")
+                                .font(.system(size: 14, weight: .black, design: .monospaced))
+                                .foregroundColor(Color(red: 0.7, green: 0.7, blue: 0.8))
+                            Text("[CANCEL]")
+                                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                .foregroundColor(Color(red: 0.7, green: 0.7, blue: 0.8))
+                            Text(">> ABORT PROTOCOL <<")
+                                .font(.system(size: 8, weight: .medium, design: .monospaced))
+                                .foregroundColor(Color(red: 0.5, green: 0.5, blue: 0.6))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color(red: 0.7, green: 0.7, blue: 0.8), lineWidth: 1)
+                                .background(Color(red: 0.1, green: 0.1, blue: 0.15).opacity(0.8))
                         )
-                    } else {
-                        // 创建模式：生成新的ID
-                        newGroup = ConfigGroup(name: groupName, color: selectedColor)
                     }
-                    onSave(newGroup)
-                    presentationMode.wrappedValue.dismiss()
+                    .buttonStyle(.plain)
+
+                    // 保存/更新按钮
+                    Button(action: {
+                        let newGroup: ConfigGroup
+                        if let group = editingGroup {
+                            // 编辑模式：保留原有ID和其他属性
+                            newGroup = ConfigGroup(
+                                id: group.id,
+                                name: groupName,
+                                color: selectedColor,
+                                sortOrder: group.sortOrder
+                            )
+                        } else {
+                            // 创建模式：生成新的ID
+                            newGroup = ConfigGroup(name: groupName, color: selectedColor)
+                        }
+                        onSave(newGroup)
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        VStack(spacing: 4) {
+                            Text("▶")
+                                .font(.system(size: 14, weight: .black, design: .monospaced))
+                                .foregroundColor(groupName.isEmpty ? Color(red: 0.5, green: 0.5, blue: 0.6) : Color(red: 0.0, green: 1.0, blue: 1.0))
+                            Text(isEditing ? "[UPDATE]" : "[CREATE]")
+                                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                .foregroundColor(groupName.isEmpty ? Color(red: 0.5, green: 0.5, blue: 0.6) : Color(red: 0.0, green: 1.0, blue: 1.0))
+                            Text(groupName.isEmpty ? ">> INVALID INPUT <<" : ">> COMMIT GROUP <<")
+                                .font(.system(size: 8, weight: .medium, design: .monospaced))
+                                .foregroundColor(groupName.isEmpty ? Color(red: 0.8, green: 0.3, blue: 0.3) : Color(red: 0.0, green: 1.0, blue: 0.5))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(
+                                    groupName.isEmpty ?
+                                    LinearGradient(colors: [Color(red: 0.5, green: 0.5, blue: 0.6), Color(red: 0.4, green: 0.4, blue: 0.5)], startPoint: .topLeading, endPoint: .bottomTrailing) :
+                                    LinearGradient(colors: [Color(red: 0.0, green: 1.0, blue: 1.0), Color(red: 0.0, green: 1.0, blue: 0.5)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                                    lineWidth: groupName.isEmpty ? 1 : 2
+                                )
+                                .background(
+                                    groupName.isEmpty ?
+                                    LinearGradient(
+                                        colors: [Color(red: 0.1, green: 0.1, blue: 0.15).opacity(0.8), Color(red: 0.05, green: 0.05, blue: 0.1).opacity(0.8)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ) :
+                                    LinearGradient(
+                                        colors: [Color(red: 0.0, green: 1.0, blue: 1.0).opacity(0.2), Color(red: 0.0, green: 1.0, blue: 0.5).opacity(0.1)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(groupName.isEmpty)
+                    .shadow(
+                        color: groupName.isEmpty ? Color.clear : Color(red: 0.0, green: 1.0, blue: 1.0),
+                        radius: groupName.isEmpty ? 0 : 8,
+                        x: 0,
+                        y: 0
+                    )
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(!groupName.isEmpty ? Color.blue : Color.gray)
-                .foregroundColor(.white)
-                .cornerRadius(10)
-                .disabled(groupName.isEmpty)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 32)
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 30)
         }
         .frame(minWidth: 400, minHeight: 400)
         .onAppear {
