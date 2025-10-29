@@ -443,6 +443,7 @@ struct ConfigEditView: View {
     @Environment(\.presentationMode) var presentationMode
     @StateObject private var groupManager = GroupManager.shared
     @State private var config: Config
+    @State private var isGroupSelectorExpanded = false
     let onSave: (Config) -> Void
     let isEditing: Bool
 
@@ -452,110 +453,427 @@ struct ConfigEditView: View {
         self.isEditing = config != nil
     }
 
+    // 获取分组颜色（用于编辑视图）
+    private func getGroupColorForEdit(_ colorString: String) -> Color {
+        switch colorString {
+        case "blue": return Color(red: 0.0, green: 1.0, blue: 1.0) // 霓虹蓝
+        case "green": return Color(red: 0.0, green: 1.0, blue: 0.5) // 赛博绿
+        case "red": return Color(red: 1.0, green: 0.0, blue: 0.5) // 霓虹粉
+        case "orange": return Color(red: 1.0, green: 0.5, blue: 0.0) // 电光橙
+        case "purple": return Color(red: 0.8, green: 0.0, blue: 1.0) // 赛博紫
+        case "pink": return Color(red: 1.0, green: 0.2, blue: 0.8) // 霓虹紫
+        default: return Color(red: 0.0, green: 1.0, blue: 1.0)
+        }
+    }
+
     var body: some View {
-        VStack(spacing: 20) {
-            Text(isEditing ? "编辑配置" : "添加新配置")
-                .font(.title)
-                .fontWeight(.bold)
-                .padding(.top)
+        ZStack {
+            // 赛博朋克背景
+            LinearGradient(
+                colors: [
+                    Color(red: 0.05, green: 0.0, blue: 0.1),
+                    Color(red: 0.1, green: 0.05, blue: 0.15),
+                    Color(red: 0.02, green: 0.0, blue: 0.08)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("配置名称")
-                            .font(.headline)
-                        TextField("例如：工作项目", text: $config.name)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+            VStack(spacing: 24) {
+                // 赛博朋克标题
+                VStack(spacing: 8) {
+                    Text(isEditing ? "[EDIT_CONFIG]" : "[NEW_CONFIG]")
+                        .font(.system(size: 24, weight: .black, design: .monospaced))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 0.0, green: 1.0, blue: 1.0),
+                                    Color(red: 0.8, green: 0.0, blue: 1.0)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .shadow(color: Color(red: 0.0, green: 1.0, blue: 1.0), radius: 8, x: 0, y: 0)
+
+                    Text(">> CONFIGURATION PROTOCOL ACTIVE <<")
+                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+                }
+                .padding(.top, 24)
+
+                ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    // 配置名称字段
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(spacing: 8) {
+                            Text("◆")
+                                .font(.system(size: 12, weight: .black, design: .monospaced))
+                                .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
+                            Text("CONFIG_NAME")
+                                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                        }
+                        TextField("ENTER_CONFIG_NAME", text: $config.name)
+                            .font(.system(size: 13, design: .monospaced))
+                            .foregroundColor(Color.black)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(red: 0.0, green: 1.0, blue: 1.0), lineWidth: 1)
+                                    .background(Color(red: 0.9, green: 0.9, blue: 0.95))
+                            )
                             .disableAutocorrection(true)
                     }
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("API URL")
-                            .font(.headline)
+                    // API URL字段
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(spacing: 8) {
+                            Text("◆")
+                                .font(.system(size: 12, weight: .black, design: .monospaced))
+                                .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
+                            Text("API_ENDPOINT")
+                                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                        }
                         TextField("https://api.anthropic.com", text: $config.apiUrl)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .font(.system(size: 13, design: .monospaced))
+                            .foregroundColor(Color.black)
+                                                        .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(red: 0.0, green: 1.0, blue: 1.0), lineWidth: 1)
+                                    .background(Color(red: 0.9, green: 0.9, blue: 0.95))
+                            )
                             .disableAutocorrection(true)
                     }
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("API Key")
-                            .font(.headline)
+                    // API Key字段
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(spacing: 8) {
+                            Text("◆")
+                                .font(.system(size: 12, weight: .black, design: .monospaced))
+                                .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
+                            Text("API_KEY")
+                                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                        }
                         SecureField("sk-ant-api03-...", text: $config.apiKey)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .font(.system(size: 13, design: .monospaced))
+                            .foregroundColor(Color.black)
+                                                        .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(red: 0.0, green: 1.0, blue: 1.0), lineWidth: 1)
+                                    .background(Color(red: 0.9, green: 0.9, blue: 0.95))
+                            )
                             .disableAutocorrection(true)
                     }
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("工作目录")
-                            .font(.headline)
-                        HStack {
-                            TextField("/path/to/your/project", text: $config.workingDirectory)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                    // 工作目录字段
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(spacing: 8) {
+                            Text("◆")
+                                .font(.system(size: 12, weight: .black, design: .monospaced))
+                                .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
+                            Text("WORKING_DIRECTORY")
+                                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                        }
+                        HStack(spacing: 12) {
+                            TextField("/path/to/project", text: $config.workingDirectory)
+                                .font(.system(size: 13, design: .monospaced))
+                                .foregroundColor(Color.black)
+                                                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color(red: 0.0, green: 1.0, blue: 1.0), lineWidth: 1)
+                                        .background(Color(red: 0.9, green: 0.9, blue: 0.95))
+                                )
                                 .disableAutocorrection(true)
-                            Button("浏览") {
+
+                            Button(action: {
                                 selectWorkingDirectory()
+                            }) {
+                                Text("[BROWSE]")
+                                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                    .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(Color(red: 0.0, green: 1.0, blue: 0.5), lineWidth: 1)
+                                            .background(Color(red: 0.0, green: 1.0, blue: 0.5).opacity(0.1))
+                                    )
                             }
-                            .buttonStyle(.bordered)
+                            .buttonStyle(.plain)
                         }
                     }
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("所属分组")
-                            .font(.headline)
-                        Menu {
-                            ForEach(groupManager.groups) { group in
-                                Button(action: {
-                                    config.groupId = group.id
-                                }) {
-                                    Text(group.name)
+                    // 分组选择字段
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(spacing: 8) {
+                            Text("◆")
+                                .font(.system(size: 12, weight: .black, design: .monospaced))
+                                .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
+                            Text("PROJECT_GROUP")
+                                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                        }
+
+                        // 使用自定义的下拉选择器
+                        VStack(spacing: 0) {
+                            // 当前选中的分组显示
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    isGroupSelectorExpanded.toggle()
+                                }
+                            }) {
+                                HStack {
+                                    // 显示当前选中的分组信息
+                                    if let selectedGroup = groupManager.groups.first(where: { $0.id == config.groupId }) {
+                                        HStack(spacing: 8) {
+                                            Text("●")
+                                                .font(.system(size: 12, weight: .black, design: .monospaced))
+                                                .foregroundColor(getGroupColorForEdit(selectedGroup.color))
+
+                                            Text(selectedGroup.name)
+                                                .font(.system(size: 13, weight: .medium, design: .monospaced))
+                                                .foregroundColor(Color.black)
+                                        }
+                                    } else {
+                                        Text("SELECT_GROUP")
+                                            .font(.system(size: 13, design: .monospaced))
+                                            .foregroundColor(Color.black)
+                                    }
+
+                                    Spacer()
+                                    Text(isGroupSelectorExpanded ? "▲" : "▼")
+                                        .font(.system(size: 10, weight: .black, design: .monospaced))
+                                        .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                                        .animation(.easeInOut(duration: 0.3), value: isGroupSelectorExpanded)
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(
+                                            groupManager.groups.first(where: { $0.id == config.groupId }) != nil ?
+                                            getGroupColorForEdit(groupManager.groups.first(where: { $0.id == config.groupId })?.color ?? "blue") :
+                                            Color(red: 0.0, green: 1.0, blue: 1.0),
+                                            lineWidth: 1
+                                        )
+                                        .background(Color(red: 0.9, green: 0.9, blue: 0.95))
+                                )
+                            }
+                            .buttonStyle(.plain)
+
+                            // 分组选项列表（只在展开时显示）
+                            if isGroupSelectorExpanded {
+                                VStack(spacing: 2) {
+                                    ForEach(groupManager.groups) { group in
+                                        Button(action: {
+                                            config.groupId = group.id
+                                            withAnimation(.easeInOut(duration: 0.2)) {
+                                                isGroupSelectorExpanded = false
+                                            }
+                                        }) {
+                                            HStack(spacing: 10) {
+                                                Text("●")
+                                                    .font(.system(size: 10, weight: .black, design: .monospaced))
+                                                    .foregroundColor(getGroupColorForEdit(group.color))
+
+                                                Text(group.name)
+                                                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                                                    .foregroundColor(Color.black)
+
+                                                Spacer()
+
+                                                // 如果这是当前选中的分组，显示选中标记
+                                                if config.groupId == group.id {
+                                                    Text("✓")
+                                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                                        .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+                                                }
+                                            }
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 10)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 6)
+                                                    .fill(config.groupId == group.id ?
+                                                        Color(red: 0.8, green: 0.9, blue: 1.0) :
+                                                        Color(red: 0.95, green: 0.95, blue: 1.0))
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 6)
+                                                            .stroke(getGroupColorForEdit(group.color), lineWidth: config.groupId == group.id ? 2 : 1)
+                                                    )
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                                .padding(.top, 4)
+                            }
+                        }
+                        .background(Color(red: 0.9, green: 0.9, blue: 0.95))
+                        .cornerRadius(8)
+                        .onTapGesture {
+                            if isGroupSelectorExpanded {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    isGroupSelectorExpanded = false
                                 }
                             }
-                        } label: {
-                            HStack {
-                                Text("选择分组")
-                                Spacer()
-                                Image(systemName: "chevron.down")
-                            }
-                            .padding()
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(8)
                         }
                     }
 
-                    Toggle("启用危险模式", isOn: $config.isDangerousMode)
-                        .font(.headline)
-                        .foregroundColor(.red)
+                    // 危险模式开关
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(spacing: 10) {
+                            Text("⚠")
+                                .font(.system(size: 16, weight: .black))
+                                .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
 
-                    Toggle("设为默认配置", isOn: $config.isDefault)
-                        .font(.headline)
+                            Text("DANGER_MODE")
+                                .font(.system(size: 16, weight: .bold, design: .monospaced))
+                                .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
+
+                            Spacer()
+                        }
+
+                        HStack(spacing: 16) {
+                            Text(">> ENABLE ADVANCED PERMISSIONS <<")
+                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                                .foregroundColor(Color(red: 0.8, green: 0.8, blue: 0.8))
+
+                            Spacer()
+
+                            // 自定义赛博朋克开关
+                            Button(action: {
+                                config.isDangerousMode.toggle()
+                            }) {
+                                HStack(spacing: 8) {
+                                    Text(config.isDangerousMode ? "ACTIVE" : "INACTIVE")
+                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                        .foregroundColor(config.isDangerousMode ? Color(red: 0.0, green: 1.0, blue: 0.5) : Color(red: 0.7, green: 0.7, blue: 0.8))
+
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .frame(width: 50, height: 24)
+                                        .background(
+                                            LinearGradient(
+                                                colors: config.isDangerousMode ?
+                                                [Color(red: 0.0, green: 1.0, blue: 0.5), Color(red: 0.0, green: 0.8, blue: 0.3)] :
+                                                [Color(red: 0.3, green: 0.3, blue: 0.4), Color(red: 0.2, green: 0.2, blue: 0.3)],
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(config.isDangerousMode ? Color(red: 0.0, green: 1.0, blue: 0.5) : Color(red: 0.5, green: 0.5, blue: 0.6), lineWidth: 1)
+                                        )
+                                        .overlay(
+                                            Circle()
+                                                .frame(width: 18, height: 18)
+                                                .foregroundColor(Color.black)
+                                                .offset(x: config.isDangerousMode ? 13 : -13)
+                                                .animation(Animation.easeInOut(duration: 0.2), value: config.isDangerousMode)
+                                        )
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
                 }
                 .padding(20)
             }
 
             Spacer()
 
-            HStack(spacing: 20) {
-                Button("取消") {
+            // 赛博朋克按钮组
+            HStack(spacing: 16) {
+                // 取消按钮
+                Button(action: {
                     presentationMode.wrappedValue.dismiss()
+                }) {
+                    VStack(spacing: 4) {
+                        Text("◆")
+                            .font(.system(size: 14, weight: .black, design: .monospaced))
+                            .foregroundColor(Color(red: 0.7, green: 0.7, blue: 0.8))
+                        Text("[CANCEL]")
+                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            .foregroundColor(Color(red: 0.7, green: 0.7, blue: 0.8))
+                        Text(">> ABORT PROTOCOL <<")
+                            .font(.system(size: 8, weight: .medium, design: .monospaced))
+                            .foregroundColor(Color(red: 0.5, green: 0.5, blue: 0.6))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color(red: 0.7, green: 0.7, blue: 0.8), lineWidth: 1)
+                            .background(Color(red: 0.1, green: 0.1, blue: 0.15).opacity(0.8))
+                    )
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(10)
+                .buttonStyle(.plain)
 
-                Button(isEditing ? "更新" : "保存") {
+                // 保存/更新按钮
+                Button(action: {
                     onSave(config)
                     presentationMode.wrappedValue.dismiss()
+                }) {
+                    VStack(spacing: 4) {
+                        Text("▶")
+                            .font(.system(size: 14, weight: .black, design: .monospaced))
+                            .foregroundColor(config.isValid ? Color(red: 0.0, green: 1.0, blue: 1.0) : Color(red: 0.5, green: 0.5, blue: 0.6))
+                        Text(isEditing ? "[UPDATE]" : "[SAVE]")
+                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            .foregroundColor(config.isValid ? Color(red: 0.0, green: 1.0, blue: 1.0) : Color(red: 0.5, green: 0.5, blue: 0.6))
+                        Text(config.isValid ? ">> COMMIT CONFIG <<" : ">> INVALID INPUT <<")
+                            .font(.system(size: 8, weight: .medium, design: .monospaced))
+                            .foregroundColor(config.isValid ? Color(red: 0.0, green: 1.0, blue: 0.5) : Color(red: 0.8, green: 0.3, blue: 0.3))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(
+                                config.isValid ?
+                                LinearGradient(colors: [Color(red: 0.0, green: 1.0, blue: 1.0), Color(red: 0.0, green: 1.0, blue: 0.5)], startPoint: .topLeading, endPoint: .bottomTrailing) :
+                                LinearGradient(colors: [Color(red: 0.5, green: 0.5, blue: 0.6), Color(red: 0.4, green: 0.4, blue: 0.5)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                                lineWidth: config.isValid ? 2 : 1
+                            )
+                            .background(
+                                config.isValid ?
+                                LinearGradient(
+                                    colors: [Color(red: 0.0, green: 1.0, blue: 1.0).opacity(0.2), Color(red: 0.0, green: 1.0, blue: 0.5).opacity(0.1)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ) :
+                                LinearGradient(
+                                    colors: [Color(red: 0.1, green: 0.1, blue: 0.15).opacity(0.8), Color(red: 0.05, green: 0.05, blue: 0.1).opacity(0.8)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    )
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(config.isValid ? Color.blue : Color.gray)
-                .foregroundColor(.white)
-                .cornerRadius(10)
+                .buttonStyle(.plain)
                 .disabled(!config.isValid)
+                .shadow(
+                    color: config.isValid ? Color(red: 0.0, green: 1.0, blue: 1.0) : Color.clear,
+                    radius: config.isValid ? 8 : 0,
+                    x: 0,
+                    y: 0
+                )
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 30)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 32)
+        }
         }
         .frame(minWidth: 500, minHeight: 600)
     }
@@ -692,40 +1010,92 @@ struct ContentView: View {
                 .padding(.top, 40)
                 .padding(.horizontal, 30)
 
-            // 分组选择器
-            VStack(alignment: .leading, spacing: 12) {
+            // 赛博朋克分组选择器
+            VStack(alignment: .leading, spacing: 16) {
                 HStack {
-                    Text("项目分组")
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                    HStack(spacing: 10) {
+                        Text("◆")
+                            .font(.system(size: 16, weight: .black, design: .monospaced))
+                            .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
+                        Text("PROJECT_GROUPS")
+                            .font(.system(size: 16, weight: .bold, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                    }
                     Spacer()
                     Button(action: {
                         showingAddGroup = true
                     }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 14))
-                            Text("新建分组")
-                                .font(.caption)
+                        HStack(spacing: 8) {
+                            Text("+")
+                                .font(.system(size: 14, weight: .black, design: .monospaced))
+                                .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+                            Text("[NEW_GROUP]")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
                         }
-                        .foregroundColor(.blue)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(Color(red: 0.0, green: 1.0, blue: 0.5), lineWidth: 2)
+                                .background(Color(red: 0.0, green: 1.0, blue: 0.5).opacity(0.15))
+                        )
                     }
                     .buttonStyle(.plain)
+                    .shadow(color: Color(red: 0.0, green: 1.0, blue: 0.5), radius: 8, x: 0, y: 0)
                 }
 
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: 16) {
                         // 全部配置
                         Button(action: {
                             selectedGroupId = nil
                         }) {
-                            Text("全部配置 (\(configs.count))")
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(selectedGroupId == nil ? Color.blue.opacity(0.2) : Color.gray.opacity(0.1))
-                                .cornerRadius(8)
+                            VStack(spacing: 6) {
+                                HStack(spacing: 8) {
+                                    Text("●")
+                                        .font(.system(size: 12, weight: .black, design: .monospaced))
+                                        .foregroundColor(selectedGroupId == nil ? Color(red: 0.0, green: 1.0, blue: 1.0) : Color(red: 0.7, green: 0.7, blue: 0.8))
+                                    Text("[ALL_CONFIGS]")
+                                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                        .foregroundColor(selectedGroupId == nil ? Color(red: 0.0, green: 1.0, blue: 1.0) : Color(red: 0.9, green: 0.9, blue: 0.9))
+                                }
+                                Text("(\(configs.count))")
+                                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                                    .foregroundColor(selectedGroupId == nil ? Color(red: 0.0, green: 1.0, blue: 0.5) : Color(red: 0.8, green: 0.8, blue: 0.8))
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(
+                                        selectedGroupId == nil ?
+                                        LinearGradient(colors: [Color(red: 0.0, green: 1.0, blue: 1.0), Color(red: 0.8, green: 0.0, blue: 1.0)], startPoint: .topLeading, endPoint: .bottomTrailing) :
+                                        LinearGradient(colors: [Color(red: 0.7, green: 0.7, blue: 0.8), Color(red: 0.5, green: 0.5, blue: 0.6)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                                        lineWidth: selectedGroupId == nil ? 2 : 1
+                                    )
+                                    .background(
+                                        selectedGroupId == nil ?
+                                        LinearGradient(
+                                            colors: [Color(red: 0.0, green: 1.0, blue: 1.0).opacity(0.2), Color(red: 0.8, green: 0.0, blue: 1.0).opacity(0.15)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ) :
+                                        LinearGradient(
+                                            colors: [Color(red: 0.1, green: 0.1, blue: 0.15).opacity(0.8), Color(red: 0.05, green: 0.05, blue: 0.1).opacity(0.8)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                            )
                         }
                         .buttonStyle(.plain)
+                        .shadow(
+                            color: selectedGroupId == nil ? Color(red: 0.0, green: 1.0, blue: 1.0) : Color.clear,
+                            radius: selectedGroupId == nil ? 10 : 0,
+                            x: 0,
+                            y: 0
+                        )
 
                         // 各个分组
                         ForEach(groupManager.groups) { group in
@@ -733,45 +1103,78 @@ struct ContentView: View {
                             Button(action: {
                                 selectedGroupId = group.id
                             }) {
-                                HStack(spacing: 6) {
-                                    Circle()
-                                        .fill(getGroupColor(group.color))
-                                        .frame(width: 8, height: 8)
+                                VStack(spacing: 6) {
+                                    HStack(spacing: 8) {
+                                        Text("●")
+                                            .font(.system(size: 10, weight: .black, design: .monospaced))
+                                            .foregroundColor(getGroupColor(group.color))
+                                        Text("[\(group.name.uppercased())]")
+                                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                            .foregroundColor(selectedGroupId == group.id ? getGroupColor(group.color) : Color(red: 0.9, green: 0.9, blue: 0.9))
 
-                                    Text("\(group.name) (\(groupConfigCount))")
-                                        .foregroundColor(.primary)
+                                        if group.id != ConfigGroup.defaultGroupId {
+                                            HStack(spacing: 4) {
+                                                Button(action: {
+                                                    editingGroup = group
+                                                }) {
+                                                    Text("⚙")
+                                                        .font(.system(size: 9, weight: .black, design: .monospaced))
+                                                        .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+                                                }
+                                                .buttonStyle(.plain)
 
-                                    if group.id != ConfigGroup.defaultGroupId {
-                                        Button(action: {
-                                            editingGroup = group
-                                        }) {
-                                            Image(systemName: "pencil.circle")
-                                                .font(.system(size: 12))
-                                                .foregroundColor(.blue)
+                                                Button(action: {
+                                                    groupToDelete = group
+                                                    showingDeleteGroupAlert = true
+                                                }) {
+                                                    Text("✕")
+                                                        .font(.system(size: 9, weight: .black, design: .monospaced))
+                                                        .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
+                                                }
+                                                .buttonStyle(.plain)
+                                                .help("删除分组")
+                                            }
                                         }
-                                        .buttonStyle(.plain)
-
-                                        Button(action: {
-                                            groupToDelete = group
-                                            showingDeleteGroupAlert = true
-                                        }) {
-                                            Image(systemName: "minus.circle.fill")
-                                                .font(.system(size: 12))
-                                                .foregroundColor(.red)
-                                        }
-                                        .buttonStyle(.plain)
-                                        .help("删除分组")
                                     }
+                                    Text("(\(groupConfigCount))")
+                                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                                        .foregroundColor(selectedGroupId == group.id ? getGroupColor(group.color) : Color(red: 0.8, green: 0.8, blue: 0.8))
                                 }
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(selectedGroupId == group.id ? getGroupColor(group.color).opacity(0.2) : Color.gray.opacity(0.1))
-                                .cornerRadius(8)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(
+                                            selectedGroupId == group.id ?
+                                            LinearGradient(colors: [getGroupColor(group.color), getGroupColor(group.color).opacity(0.6)], startPoint: .topLeading, endPoint: .bottomTrailing) :
+                                            LinearGradient(colors: [getGroupColor(group.color).opacity(0.5), getGroupColor(group.color).opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                                            lineWidth: selectedGroupId == group.id ? 2 : 1
+                                        )
+                                        .background(
+                                            selectedGroupId == group.id ?
+                                            LinearGradient(
+                                                colors: [getGroupColor(group.color).opacity(0.25), getGroupColor(group.color).opacity(0.1)],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ) :
+                                            LinearGradient(
+                                                colors: [Color(red: 0.1, green: 0.1, blue: 0.15).opacity(0.8), Color(red: 0.05, green: 0.05, blue: 0.1).opacity(0.8)],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                )
                             }
                             .buttonStyle(.plain)
+                            .shadow(
+                                color: selectedGroupId == group.id ? getGroupColor(group.color) : Color.clear,
+                                radius: selectedGroupId == group.id ? 8 : 0,
+                                x: 0,
+                                y: 0
+                            )
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 24)
                 }
             }
             .padding(.horizontal, 20)
@@ -884,39 +1287,161 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
 
-            // 添加配置按钮
+            // 赛博朋克添加配置按钮
             Button(action: {
                 showingAddConfig = true
             }) {
-                HStack {
-                    Image(systemName: "plus")
-                    Text("添加配置")
+                VStack(spacing: 8) {
+                    HStack(spacing: 12) {
+                        Text("▶")
+                            .font(.system(size: 16, weight: .black, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+
+                        Text("[CREATE_NEW_CONFIG]")
+                            .font(.system(size: 16, weight: .black, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+
+                        Text("▶")
+                            .font(.system(size: 16, weight: .black, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+                    }
+                    Text(">> INITIATE CONFIGURATION PROTOCOL <<")
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
                 }
-                .font(.headline)
-                .foregroundColor(.white)
-                .padding()
+                .padding(.horizontal, 24)
+                .padding(.vertical, 18)
                 .frame(maxWidth: .infinity)
-                .background(Color.blue)
-                .cornerRadius(10)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 0.0, green: 1.0, blue: 1.0),
+                                    Color(red: 0.8, green: 0.0, blue: 1.0),
+                                    Color(red: 0.0, green: 1.0, blue: 0.5)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2
+                        )
+                        .background(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 0.0, green: 1.0, blue: 1.0).opacity(0.15),
+                                    Color(red: 0.8, green: 0.0, blue: 1.0).opacity(0.1),
+                                    Color(red: 0.0, green: 1.0, blue: 0.5).opacity(0.05)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
             }
+            .buttonStyle(.plain)
             .padding(.horizontal, 20)
-            .padding(.bottom, 20)
+            .padding(.bottom, 24)
+            .shadow(
+                color: Color(red: 0.0, green: 1.0, blue: 1.0),
+                radius: 15,
+                x: 0,
+                y: 0
+            )
 
-            // 开发者信息
-            HStack {
-                Spacer()
-                VStack(spacing: 4) {
-                    Text("开发者: weiming")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+            // 赛博朋克系统信息
+            VStack(spacing: 12) {
+                // 配置文件路径显示
+                HStack {
+                    Text("◆")
+                        .font(.system(size: 10, weight: .black, design: .monospaced))
+                        .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
 
-                    Text("联系邮箱: swimming.xwm@gmail.com")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    Text("CONFIG_PATH:")
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+
+                    Text("~/Library/Application Support/cccfg/configs.json")
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .foregroundColor(Color(red: 0.9, green: 0.9, blue: 0.9))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+
+                    Spacer()
                 }
-                Spacer()
+
+                // 分组文件路径显示
+                HStack {
+                    Text("◆")
+                        .font(.system(size: 10, weight: .black, design: .monospaced))
+                        .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.5))
+
+                    Text("GROUP_PATH:")
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundColor(Color(red: 0.0, green: 1.0, blue: 1.0))
+
+                    Text("~/Library/Application Support/cccfg/groups.json")
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .foregroundColor(Color(red: 0.9, green: 0.9, blue: 0.9))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+
+                    Spacer()
+                }
+
+                // 分隔线
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.0, green: 1.0, blue: 1.0).opacity(0.3),
+                                Color(red: 0.8, green: 0.0, blue: 1.0).opacity(0.3),
+                                Color(red: 0.0, green: 1.0, blue: 1.0).opacity(0.3)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(height: 1)
+                    .padding(.horizontal, 50)
+
+                // 开发者信息
+                HStack(spacing: 40) {
+                    HStack(spacing: 8) {
+                        Text("◆")
+                            .font(.system(size: 10, weight: .black, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+
+                        Text("DEVELOPER: WEIMING")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundColor(Color(red: 0.9, green: 0.9, blue: 0.9))
+                    }
+
+                    HStack(spacing: 8) {
+                        Text("◆")
+                            .font(.system(size: 10, weight: .black, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+
+                        Text("CONTACT: SWIMMING.XWM@GMAIL.COM")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundColor(Color(red: 0.9, green: 0.9, blue: 0.9))
+                    }
+
+                    HStack(spacing: 8) {
+                        Text("◆")
+                            .font(.system(size: 10, weight: .black, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+
+                        Text("VERSION: 1.1.4")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundColor(Color(red: 0.0, green: 1.0, blue: 0.5))
+                    }
+
+                    Spacer()
+                }
             }
-            .padding(.bottom, 10)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 16)
         }
         .frame(minWidth: 600, minHeight: 520)
         .onAppear {
