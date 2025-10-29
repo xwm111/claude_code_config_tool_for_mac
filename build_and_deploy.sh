@@ -10,7 +10,7 @@ echo "🚀 开始构建 Claude Code Config 应用..."
 # 定义变量
 APP_NAME="ClaudeCodeConfig"
 BUNDLE_ID="com.claudecode.config"
-VERSION="1.1.0"
+VERSION="1.1.4"
 SOURCE_FILE="src/main.swift"
 TEMP_BUILD_DIR="build"
 APP_DIR="Applications"
@@ -29,15 +29,19 @@ echo "🔨 编译Swift代码..."
 echo "   源文件: $SOURCE_FILE"
 echo "   目标架构: x86_64 arm64 (Universal Binary)"
 
+# 查找所有Swift文件
+SWIFT_FILES=$(find src -name "*.swift" -type f | tr '\n' ' ')
+echo "   包含文件: $SWIFT_FILES"
+
 # 创建Universal Binary (支持Intel和Apple Silicon)
 echo "   编译Intel x86_64版本..."
 swiftc -target x86_64-apple-macos13.0 -sdk $(xcrun --show-sdk-path --sdk macosx) \
-    -parse-as-library -O "$SOURCE_FILE" -o "$TEMP_BUILD_DIR/${APP_NAME}_x86_64" \
+    -parse-as-library -O $SWIFT_FILES -o "$TEMP_BUILD_DIR/${APP_NAME}_x86_64" \
     -suppress-warnings
 
 echo "   编译Apple Silicon arm64版本..."
 swiftc -target arm64-apple-macos13.0 -sdk $(xcrun --show-sdk-path --sdk macosx) \
-    -parse-as-library -O "$SOURCE_FILE" -o "$TEMP_BUILD_DIR/${APP_NAME}_arm64" \
+    -parse-as-library -O $SWIFT_FILES -o "$TEMP_BUILD_DIR/${APP_NAME}_arm64" \
     -suppress-warnings
 
 echo "   合并为Universal Binary..."

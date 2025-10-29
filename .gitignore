@@ -163,3 +163,5 @@ test_report.md
 *.bak
 *.backup
 *.old
+
+ClaudeCodeConfig.app
