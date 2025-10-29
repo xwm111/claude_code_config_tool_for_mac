@@ -1,0 +1,138 @@
+/* ContentView */
+"SYSTEM_ONLINE" = "System Online";
+"SHUTDOWN" = "Quit";
+"NEURAL_CONFIGURATION_INTERFACE" = "◇ Claude Code Configuration ◇";
+"NODE_SELECTION" = "Group Selection";
+"ACCESS_TERMINAL" = "Terminal";
+"CONFIGURATION_MATRIX" = "Configuration List";
+"ACTIVE_NODES" = "Configurations";
+"CREATE_NEW_CONFIG" = "Create New Configuration";
+"SYSTEM_ARCHITECT" = "Developer";
+"CONTACT_PROTOCOL" = "Contact";
+"READY" = "Ready";
+
+/* Group operations */
+"ALL_GROUPS" = "all groups";
+"UNKNOWN_GROUP" = "Unknown Group";
+
+/* Configuration operations */
+"COPY_CMD" = "Copy Command";
+"DUPLICATE" = "Duplicate";
+"LAUNCHING" = "Launching...";
+"LAUNCH" = "Launch";
+"EDIT" = "Edit";
+"DELETE" = "Delete";
+"DANGER_MODE" = "Dangerous Mode";
+"ACTIVE" = "Active";
+"PATH" = "Path:";
+"API" = "API:";
+
+/* Alerts */
+"DELETE_GROUP" = "Delete Group";
+"CANCEL" = "Cancel";
+"DELETE" = "Delete";
+"DELETE_GROUP_CONFIRMATION" = "Are you sure you want to delete group \"%@\"? All configurations in this group will be moved to the default group.";
+"DELETE_CONFIG" = "Delete Configuration";
+"DELETE_CONFIG_CONFIRMATION" = "Are you sure you want to delete configuration \"%@\"? This operation cannot be undone.";
+
+/* Toast messages */
+"CONFIG_DELETED" = "Configuration deleted";
+"LAUNCH_COMMAND_COPIED" = "Launch command copied to clipboard";
+"CONFIG_DUPLICATED" = "Created %@ copy";
+
+/* Configuration editing */
+"CONFIG_NAME" = "Configuration Name";
+"API_URL" = "API URL";
+"API_KEY" = "API Key";
+"MODEL_NAME" = "Model Name";
+"WORKING_DIRECTORY" = "Working Directory";
+"DANGEROUS_MODE" = "Dangerous Mode";
+"DEFAULT_CONFIG" = "Default Configuration";
+"SAVE" = "SAVE";
+"CANCEL_EDIT" = "CANCEL";
+
+/* Group editing */
+"GROUP_NAME" = "Group Name";
+"GROUP_COLOR" = "Group Color";
+"CREATE_GROUP" = "Create Group";
+"EDIT_GROUP" = "Edit Group";
+"SAVE_GROUP" = "SAVE GROUP";
+
+/* Validation messages */
+"CONFIG_NAME_REQUIRED" = "Configuration name is required";
+"API_URL_REQUIRED" = "API URL is required";
+"API_KEY_REQUIRED" = "API key is required";
+"WORKING_DIRECTORY_REQUIRED" = "Working directory is required";
+"WORKING_DIRECTORY_INVALID" = "Working directory does not exist";
+"API_URL_INVALID" = "Invalid API URL format";
+
+/* Application info */
+"APP_NAME" = "Claude Code Configuration";
+"VERSION" = "Version";
+"DEVELOPER" = "Developer";
+"EMAIL" = "Email";
+
+/* File operations */
+"EXPORT" = "Export";
+"IMPORT" = "Import";
+"EXPORT_SUCCESS" = "Export successful";
+"IMPORT_SUCCESS" = "Import successful";
+"IMPORT_ERROR" = "Import failed: %@";
+
+/* System requirements */
+"ITERM2_REQUIRED" = "iTerm2 is required for launching configurations";
+"CLAUDE_CLI_REQUIRED" = "Claude CLI is required";
+"DEPENDENCY_CHECK" = "System Dependencies Check";
+"ALL_DEPENDENCIES_OK" = "All dependencies are satisfied";
+"DEPENDENCIES_MISSING" = "Missing dependencies";
+
+/* Colors */
+"COLOR_BLUE" = "Blue";
+"COLOR_GREEN" = "Green";
+"COLOR_RED" = "Red";
+"COLOR_ORANGE" = "Orange";
+"COLOR_PURPLE" = "Purple";
+"COLOR_PINK" = "Pink";
+
+/* Configuration editing labels */
+"EDIT_CONFIG" = "Edit Configuration";
+"NEW_CONFIG" = "New Configuration";
+"CONFIGURATION_PROTOCOL_ACTIVE" = "Configuration Editor";
+"ENTER_CONFIG_NAME" = "Configuration Name";
+"API_ENDPOINT" = "API Endpoint";
+"PROJECT_GROUP" = "Project Group";
+"MODEL_NAME" = "Model Name";
+"OPTIONS" = "Options";
+"BROWSE" = "Browse";
+"SAVE_CONFIG" = "Save Configuration";
+
+/* Group editing labels */
+"EDIT_GROUP" = "Edit Group";
+"NEW_GROUP" = "New Group";
+"GROUP_CONFIGURATION_PROTOCOL" = "Group Editor";
+"ENTER_GROUP_NAME" = "Group Name";
+"SELECT_GROUP" = "Select Group";
+"CREATE" = "Create";
+
+/* Toggle labels */
+"DANGEROUS_MODE_LABEL" = "Dangerous Mode";
+"DANGEROUS_MODE_FLAG" = "(--dangerously-skip-permissions)";
+
+/* Color names for selection */
+"BLUE_COLOR" = "Blue";
+"GREEN_COLOR" = "Green";
+"PINK_COLOR" = "Pink";
+"ORANGE_COLOR" = "Orange";
+"PURPLE_COLOR" = "Purple";
+"NEON_COLOR" = "Neon";
+
+/* Placeholders */
+"API_URL_PLACEHOLDER" = "https://api.anthropic.com";
+"API_KEY_PLACEHOLDER" = "sk-ant-api03-...";
+"WORKING_DIR_PLACEHOLDER" = "/path/to/project";
+"MODEL_PLACEHOLDER" = "claude-3-5-sonnet-20241022 (optional)";
+
+/* Status messages */
+"CONFIG_SAVED" = "✅ Configuration saved";
+"CONFIG_INVALID" = "❌ Invalid configuration";
+"LAUNCHING_STATUS" = "🚀 Launching...";

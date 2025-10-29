@@ -18,12 +18,12 @@ struct SimpleGroupEditView: View {
     private let isEditing: Bool
 
     private let availableColors = [
-        ("blue", "BLUE", Color(red: 0.0, green: 1.0, blue: 1.0)),
-        ("green", "GREEN", Color(red: 0.0, green: 1.0, blue: 0.5)),
-        ("red", "PINK", Color(red: 1.0, green: 0.0, blue: 0.5)),
-        ("orange", "ORANGE", Color(red: 1.0, green: 0.5, blue: 0.0)),
-        ("purple", "PURPLE", Color(red: 0.8, green: 0.0, blue: 1.0)),
-        ("pink", "NEON", Color(red: 1.0, green: 0.2, blue: 0.8))
+        ("blue", "BLUE_COLOR".localized(), Color(red: 0.0, green: 1.0, blue: 1.0)),
+        ("green", "GREEN_COLOR".localized(), Color(red: 0.0, green: 1.0, blue: 0.5)),
+        ("red", "PINK_COLOR".localized(), Color(red: 1.0, green: 0.0, blue: 0.5)),
+        ("orange", "ORANGE_COLOR".localized(), Color(red: 1.0, green: 0.5, blue: 0.0)),
+        ("purple", "PURPLE_COLOR".localized(), Color(red: 0.8, green: 0.0, blue: 1.0)),
+        ("pink", "NEON_COLOR".localized(), Color(red: 1.0, green: 0.2, blue: 0.8))
     ]
 
     // 赛博朋克背景渐变
@@ -59,7 +59,7 @@ struct SimpleGroupEditView: View {
             VStack(spacing: 0) {
                 // 赛博朋克标题
                 VStack(spacing: 8) {
-                    Text(isEditing ? "[EDIT_GROUP]" : "[NEW_GROUP]")
+                    Text(isEditing ? "EDIT_GROUP".localized() : "NEW_GROUP".localized())
                         .font(.system(size: 24, weight: .black, design: .monospaced))
                         .foregroundStyle(
                             LinearGradient(
@@ -73,7 +73,7 @@ struct SimpleGroupEditView: View {
                         )
                         .shadow(color: AppConstants.Colors.cyberBlue, radius: 8, x: 0, y: 0)
 
-                    Text(">> GROUP CONFIGURATION PROTOCOL <<")
+                    Text("GROUP_CONFIGURATION_PROTOCOL".localized())
                         .font(.system(size: 11, weight: .medium, design: .monospaced))
                         .foregroundColor(AppConstants.Colors.cyberGreen)
                 }
@@ -89,11 +89,11 @@ struct SimpleGroupEditView: View {
                                 Text("◆")
                                     .font(.system(size: 12, weight: .black, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberRed)
-                                Text("GROUP_NAME")
+                                Text("GROUP_NAME".localized())
                                     .font(.system(size: 14, weight: .bold, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberBlue)
                             }
-                            TextField("ENTER_GROUP_NAME", text: $groupName)
+                            TextField("ENTER_GROUP_NAME".localized(), text: $groupName)
                                 .font(.system(size: 13, design: .monospaced))
                                 .foregroundColor(Color.black)
                                 .padding(.horizontal, 16)
@@ -112,7 +112,7 @@ struct SimpleGroupEditView: View {
                                 Text("◆")
                                     .font(.system(size: 12, weight: .black, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberRed)
-                                Text("GROUP_COLOR")
+                                Text("GROUP_COLOR".localized())
                                     .font(.system(size: 14, weight: .bold, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberBlue)
                             }
@@ -154,7 +154,7 @@ struct SimpleGroupEditView: View {
                     Button(action: {
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        Text("CANCEL")
+                        Text("CANCEL".localized())
                             .font(.system(size: 14, weight: .bold, design: .monospaced))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -178,7 +178,7 @@ struct SimpleGroupEditView: View {
                         onSave(group)
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        Text("CREATE")
+                        Text("CREATE".localized())
                             .font(.system(size: 14, weight: .bold, design: .monospaced))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)

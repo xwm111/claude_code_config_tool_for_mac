@@ -61,13 +61,13 @@ struct AppConstants {
         static let maxWorkingDirectoryLength = 500
     }
 
-    // MARK: - Status Messages
+    // MARK: - Status Messages (using localization keys)
     struct Messages {
-        static let configSaved = "✅ 配置已保存"
-        static let configDeleted = "🗑️ 配置已删除"
-        static let launchSuccess = "✅ 启动命令已复制到剪贴板"
-        static let configInvalid = "❌ 配置无效"
-        static let launching = "🚀 正在启动..."
+        static let configSaved = "CONFIG_SAVED"
+        static let configDeleted = "CONFIG_DELETED"
+        static let launchSuccess = "LAUNCH_COMMAND_COPIED"
+        static let configInvalid = "CONFIG_INVALID"
+        static let launching = "LAUNCHING"
     }
 }
 

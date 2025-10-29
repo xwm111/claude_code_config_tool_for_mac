@@ -65,6 +65,15 @@ echo "📋 复制可执行文件..."
 cp "$TEMP_BUILD_DIR/$APP_NAME" "${APP_NAME}.app/Contents/MacOS/"
 chmod +x "${APP_NAME}.app/Contents/MacOS/$APP_NAME"
 
+# 复制本地化文件
+echo "🌐 复制本地化文件..."
+if [ -d "src/Resources/Localizations" ]; then
+    cp -R "src/Resources/Localizations" "${APP_NAME}.app/Contents/Resources/"
+    echo "   本地化文件已复制到应用程序包"
+else
+    echo "   ⚠️  未找到本地化文件目录"
+fi
+
 # 创建Info.plist
 echo "📄 创建Info.plist..."
 cat > "${APP_NAME}.app/Contents/Info.plist" << EOF
