@@ -1,0 +1,138 @@
+/* ContentView */
+"SYSTEM_ONLINE" = "系统在线";
+"SHUTDOWN" = "退出";
+"NEURAL_CONFIGURATION_INTERFACE" = "◇ Claude Code 配置工具 ◇";
+"NODE_SELECTION" = "分组选择";
+"ACCESS_TERMINAL" = "终端";
+"CONFIGURATION_MATRIX" = "配置列表";
+"ACTIVE_NODES" = "配置数量";
+"CREATE_NEW_CONFIG" = "创建新配置";
+"SYSTEM_ARCHITECT" = "开发者";
+"CONTACT_PROTOCOL" = "联系方式";
+"READY" = "就绪";
+
+/* Group operations */
+"ALL_GROUPS" = "所有分组";
+"UNKNOWN_GROUP" = "未知分组";
+
+/* Configuration operations */
+"COPY_CMD" = "复制命令";
+"DUPLICATE" = "复制";
+"LAUNCHING" = "启动中...";
+"LAUNCH" = "启动";
+"EDIT" = "编辑";
+"DELETE" = "删除";
+"DANGER_MODE" = "危险模式";
+"ACTIVE" = "运行中";
+"PATH" = "路径:";
+"API" = "API:";
+
+/* Alerts */
+"DELETE_GROUP" = "删除分组";
+"CANCEL" = "取消";
+"DELETE" = "删除";
+"DELETE_GROUP_CONFIRMATION" = "确定要删除分组 \"%@\" 吗？该分组的所有配置将移到默认分组。";
+"DELETE_CONFIG" = "删除配置";
+"DELETE_CONFIG_CONFIRMATION" = "确定要删除配置 \"%@\" 吗？此操作不可撤销。";
+
+/* Toast messages */
+"CONFIG_DELETED" = "配置已删除";
+"LAUNCH_COMMAND_COPIED" = "启动命令已复制到剪贴板";
+"CONFIG_DUPLICATED" = "已创建 %@ 副本";
+
+/* Configuration editing */
+"CONFIG_NAME" = "配置名称";
+"API_URL" = "API URL";
+"API_KEY" = "API 密钥";
+"MODEL_NAME" = "模型名称";
+"WORKING_DIRECTORY" = "工作目录";
+"DANGEROUS_MODE" = "危险模式";
+"DEFAULT_CONFIG" = "默认配置";
+"SAVE" = "保存";
+"CANCEL_EDIT" = "取消";
+
+/* Group editing */
+"GROUP_NAME" = "分组名称";
+"GROUP_COLOR" = "分组颜色";
+"CREATE_GROUP" = "创建分组";
+"EDIT_GROUP" = "编辑分组";
+"SAVE_GROUP" = "保存分组";
+
+/* Validation messages */
+"CONFIG_NAME_REQUIRED" = "配置名称不能为空";
+"API_URL_REQUIRED" = "API URL 不能为空";
+"API_KEY_REQUIRED" = "API 密钥不能为空";
+"WORKING_DIRECTORY_REQUIRED" = "工作目录不能为空";
+"WORKING_DIRECTORY_INVALID" = "工作目录不存在";
+"API_URL_INVALID" = "API URL 格式无效";
+
+/* Application info */
+"APP_NAME" = "Claude Code 配置工具";
+"VERSION" = "版本";
+"DEVELOPER" = "开发者";
+"EMAIL" = "邮箱";
+
+/* File operations */
+"EXPORT" = "导出";
+"IMPORT" = "导入";
+"EXPORT_SUCCESS" = "导出成功";
+"IMPORT_SUCCESS" = "导入成功";
+"IMPORT_ERROR" = "导入失败: %@";
+
+/* System requirements */
+"ITERM2_REQUIRED" = "需要 iTerm2 来启动配置";
+"CLAUDE_CLI_REQUIRED" = "需要 Claude CLI";
+"DEPENDENCY_CHECK" = "系统依赖检查";
+"ALL_DEPENDENCIES_OK" = "所有依赖都已满足";
+"DEPENDENCIES_MISSING" = "缺少依赖";
+
+/* Colors */
+"COLOR_BLUE" = "蓝色";
+"COLOR_GREEN" = "绿色";
+"COLOR_RED" = "红色";
+"COLOR_ORANGE" = "橙色";
+"COLOR_PURPLE" = "紫色";
+"COLOR_PINK" = "粉色";
+
+/* Configuration editing labels */
+"EDIT_CONFIG" = "编辑配置";
+"NEW_CONFIG" = "新建配置";
+"CONFIGURATION_PROTOCOL_ACTIVE" = "配置编辑器";
+"ENTER_CONFIG_NAME" = "配置名称";
+"API_ENDPOINT" = "API 端点";
+"PROJECT_GROUP" = "项目分组";
+"MODEL_NAME" = "模型名称";
+"OPTIONS" = "选项";
+"BROWSE" = "浏览";
+"SAVE_CONFIG" = "保存配置";
+
+/* Group editing labels */
+"EDIT_GROUP" = "编辑分组";
+"NEW_GROUP" = "新建分组";
+"GROUP_CONFIGURATION_PROTOCOL" = "分组编辑器";
+"ENTER_GROUP_NAME" = "分组名称";
+"SELECT_GROUP" = "选择分组";
+"CREATE" = "创建";
+
+/* Toggle labels */
+"DANGEROUS_MODE_LABEL" = "危险模式";
+"DANGEROUS_MODE_FLAG" = "(--dangerously-skip-permissions)";
+
+/* Color names for selection */
+"BLUE_COLOR" = "蓝色";
+"GREEN_COLOR" = "绿色";
+"PINK_COLOR" = "粉色";
+"ORANGE_COLOR" = "橙色";
+"PURPLE_COLOR" = "紫色";
+"NEON_COLOR" = "霓虹";
+
+/* Placeholders */
+"API_URL_PLACEHOLDER" = "https://api.anthropic.com";
+"API_KEY_PLACEHOLDER" = "sk-ant-api03-...";
+"WORKING_DIR_PLACEHOLDER" = "/path/to/project";
+"MODEL_PLACEHOLDER" = "claude-3-5-sonnet-20241022 (可选)";
+
+/* Status messages */
+"CONFIG_SAVED" = "✅ 配置已保存";
+"CONFIG_INVALID" = "❌ 配置无效";
+"LAUNCHING_STATUS" = "🚀 正在启动...";

@@ -20,6 +20,7 @@ struct cccfgApp: App {
         WindowGroup {
             ContentView()
                 .frame(minWidth: AppConstants.windowWidth, minHeight: AppConstants.windowHeight)
+                .languageAware()
         }
         .commands {
             CommandGroup(replacing: .newItem) {

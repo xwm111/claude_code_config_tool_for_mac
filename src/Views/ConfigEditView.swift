@@ -54,7 +54,7 @@ struct ConfigEditView: View {
             VStack(spacing: 24) {
                 // 赛博朋克标题
                 VStack(spacing: 8) {
-                    Text(isEditing ? "[EDIT_CONFIG]" : "[NEW_CONFIG]")
+                    Text(isEditing ? "EDIT_CONFIG".localized() : "NEW_CONFIG".localized())
                         .font(.system(size: 24, weight: .black, design: .monospaced))
                         .foregroundStyle(
                             LinearGradient(
@@ -68,7 +68,7 @@ struct ConfigEditView: View {
                         )
                         .shadow(color: AppConstants.Colors.cyberBlue, radius: 8, x: 0, y: 0)
 
-                    Text(">> CONFIGURATION PROTOCOL ACTIVE <<")
+                    Text("CONFIGURATION_PROTOCOL_ACTIVE".localized())
                         .font(.system(size: 11, weight: .medium, design: .monospaced))
                         .foregroundColor(AppConstants.Colors.cyberGreen)
                 }
@@ -82,11 +82,11 @@ struct ConfigEditView: View {
                                 Text("◆")
                                     .font(.system(size: 12, weight: .black, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberRed)
-                                Text("CONFIG_NAME")
+                                Text("CONFIG_NAME".localized())
                                     .font(.system(size: 14, weight: .bold, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberBlue)
                             }
-                            TextField("ENTER_CONFIG_NAME", text: $config.name)
+                            TextField("ENTER_CONFIG_NAME".localized(), text: $config.name)
                                 .font(.system(size: 13, design: .monospaced))
                                 .foregroundColor(Color.black)
                                 .padding(.horizontal, 16)
@@ -105,11 +105,11 @@ struct ConfigEditView: View {
                                 Text("◆")
                                     .font(.system(size: 12, weight: .black, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberRed)
-                                Text("API_ENDPOINT")
+                                Text("API_ENDPOINT".localized())
                                     .font(.system(size: 14, weight: .bold, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberBlue)
                             }
-                            TextField("https://api.anthropic.com", text: $config.apiUrl)
+                            TextField("API_URL_PLACEHOLDER".localized(), text: $config.apiUrl)
                                 .font(.system(size: 13, design: .monospaced))
                                 .foregroundColor(Color.black)
                                 .padding(.horizontal, 16)
@@ -128,11 +128,11 @@ struct ConfigEditView: View {
                                 Text("◆")
                                     .font(.system(size: 12, weight: .black, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberRed)
-                                Text("API_KEY")
+                                Text("API_KEY".localized())
                                     .font(.system(size: 14, weight: .bold, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberBlue)
                             }
-                            SecureField("sk-ant-api03-...", text: $config.apiKey)
+                            SecureField("API_KEY_PLACEHOLDER".localized(), text: $config.apiKey)
                                 .font(.system(size: 13, design: .monospaced))
                                 .foregroundColor(Color.black)
                                 .padding(.horizontal, 16)
@@ -151,12 +151,12 @@ struct ConfigEditView: View {
                                 Text("◆")
                                     .font(.system(size: 12, weight: .black, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberRed)
-                                Text("WORKING_DIRECTORY")
+                                Text("WORKING_DIRECTORY".localized())
                                     .font(.system(size: 14, weight: .bold, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberBlue)
                             }
                             HStack(spacing: 12) {
-                                TextField("/path/to/project", text: $config.workingDirectory)
+                                TextField("WORKING_DIR_PLACEHOLDER".localized(), text: $config.workingDirectory)
                                     .font(.system(size: 13, design: .monospaced))
                                     .foregroundColor(Color.black)
                                     .padding(.horizontal, 16)
@@ -169,7 +169,7 @@ struct ConfigEditView: View {
                                     .disableAutocorrection(true)
 
                                 Button(action: selectWorkingDirectory) {
-                                    Text("[BROWSE]")
+                                    Text("BROWSE".localized())
                                         .font(.system(size: 10, weight: .bold, design: .monospaced))
                                         .foregroundColor(AppConstants.Colors.cyberGreen)
                                         .padding(.horizontal, 12)
@@ -190,7 +190,7 @@ struct ConfigEditView: View {
                                 Text("◆")
                                     .font(.system(size: 12, weight: .black, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberRed)
-                                Text("PROJECT_GROUP")
+                                Text("PROJECT_GROUP".localized())
                                     .font(.system(size: 14, weight: .bold, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberBlue)
                             }
@@ -209,11 +209,11 @@ struct ConfigEditView: View {
                                 Text("◆")
                                     .font(.system(size: 12, weight: .black, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberRed)
-                                Text("MODEL_NAME")
+                                Text("MODEL_NAME".localized())
                                     .font(.system(size: 14, weight: .bold, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberBlue)
                             }
-                            TextField("claude-3-5-sonnet-20241022 (optional)", text: $config.modelName)
+                            TextField("MODEL_PLACEHOLDER".localized(), text: $config.modelName)
                                 .font(.system(size: 13, design: .monospaced))
                                 .foregroundColor(Color.black)
                                 .padding(.horizontal, 16)
@@ -232,7 +232,7 @@ struct ConfigEditView: View {
                                 Text("◆")
                                     .font(.system(size: 12, weight: .black, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberRed)
-                                Text("OPTIONS")
+                                Text("OPTIONS".localized())
                                     .font(.system(size: 14, weight: .bold, design: .monospaced))
                                     .foregroundColor(AppConstants.Colors.cyberBlue)
                             }
@@ -240,10 +240,10 @@ struct ConfigEditView: View {
                             VStack(spacing: 12) {
                                 Toggle(isOn: $config.isDangerousMode) {
                                     HStack {
-                                        Text("危险模式")
+                                        Text("DANGEROUS_MODE_LABEL".localized())
                                             .font(.system(size: 12, design: .monospaced))
                                             .foregroundColor(.white)
-                                        Text("(--dangerously-skip-permissions)")
+                                        Text("DANGEROUS_MODE_FLAG".localized())
                                             .font(.system(size: 10, design: .monospaced))
                                             .foregroundColor(AppConstants.Colors.cyberRed)
                                     }
@@ -260,7 +260,7 @@ struct ConfigEditView: View {
                     Button(action: {
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        Text("[CANCEL]")
+                        Text("CANCEL".localized())
                             .font(.system(size: 14, weight: .bold, design: .monospaced))
                             .foregroundColor(.white)
                             .padding(.horizontal, 24)
@@ -279,7 +279,7 @@ struct ConfigEditView: View {
                         onSave(config)
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        Text("[SAVE_CONFIG]")
+                        Text("SAVE_CONFIG".localized())
                             .font(.system(size: 14, weight: .bold, design: .monospaced))
                             .foregroundColor(.white)
                             .padding(.horizontal, 24)
@@ -348,7 +348,7 @@ struct GroupSelectorView: View {
                                 .foregroundColor(Color.black)
                         }
                     } else {
-                        Text("选择分组")
+                        Text("SELECT_GROUP".localized())
                             .font(.system(size: 13, design: .monospaced))
                             .foregroundColor(Color.black)
                     }

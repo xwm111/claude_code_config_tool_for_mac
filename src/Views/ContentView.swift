@@ -15,6 +15,7 @@ struct ContentView: View {
     @StateObject private var configManager = ConfigManager.shared
     @StateObject private var groupManager = GroupManager.shared
     @StateObject private var launcher = CLILauncher()
+    @StateObject private var localizationHelper = LocalizationHelper.shared
     @State private var configs: [Config] = []
     @State private var showingAddConfig = false
     @State private var editingConfig: Config?
@@ -100,12 +101,15 @@ struct ContentView: View {
                                 .frame(width: 8, height: 8)
                                 .shadow(color: AppConstants.Colors.cyberGreen, radius: 4)
 
-                            Text("SYSTEM ONLINE")
+                            Text(localizationHelper.string(for: "SYSTEM_ONLINE"))
                                 .font(.system(size: 10, weight: .bold, design: .monospaced))
                                 .foregroundColor(AppConstants.Colors.cyberGreen)
                         }
 
                         Spacer()
+
+                        // 语言切换器
+                        LanguageSwitcher()
 
                         // 版本信息
                         Text("v\(AppConstants.version)")
@@ -119,7 +123,7 @@ struct ContentView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "power")
                                     .font(.system(size: 10, weight: .bold))
-                                Text("SHUTDOWN")
+                                Text(localizationHelper.string(for: "SHUTDOWN"))
                                     .font(.system(size: 10, weight: .black, design: .monospaced))
                             }
                             .foregroundColor(.black)
@@ -167,7 +171,7 @@ struct ContentView: View {
                                 .shadow(color: AppConstants.Colors.cyberRed, radius: 8)
                         }
 
-                        Text("◇ NEURAL CONFIGURATION INTERFACE ◇")
+                        Text(localizationHelper.string(for: "NEURAL_CONFIGURATION_INTERFACE"))
                             .font(.system(size: 16, weight: .bold, design: .monospaced))
                             .foregroundColor(AppConstants.Colors.cyberGreen)
                             .shadow(color: AppConstants.Colors.cyberGreen, radius: 6)
@@ -196,14 +200,14 @@ struct ContentView: View {
                     // 分组选择器 - 重新设计
                     VStack(spacing: 12) {
                         HStack {
-                            Text("◆ NODE SELECTION")
+                            Text(localizationHelper.string(for: "NODE_SELECTION"))
                                 .font(.system(size: 14, weight: .black, design: .monospaced))
                                 .foregroundColor(AppConstants.Colors.cyberBlue)
                                 .shadow(color: AppConstants.Colors.cyberBlue, radius: 4)
 
                             Spacer()
 
-                            Text("▶ ACCESS TERMINAL")
+                            Text(localizationHelper.string(for: "ACCESS_TERMINAL"))
                                 .font(.system(size: 10, weight: .bold, design: .monospaced))
                                 .foregroundColor(AppConstants.Colors.cyberGreen)
                                 .shadow(color: AppConstants.Colors.cyberGreen, radius: 3)
@@ -229,14 +233,14 @@ struct ContentView: View {
                     // 配置列表 - 重新设计框架
                     VStack(spacing: 12) {
                         HStack {
-                            Text("◆ CONFIGURATION MATRIX")
+                            Text(localizationHelper.string(for: "CONFIGURATION_MATRIX"))
                                 .font(.system(size: 14, weight: .black, design: .monospaced))
                                 .foregroundColor(AppConstants.Colors.cyberBlue)
                                 .shadow(color: AppConstants.Colors.cyberBlue, radius: 4)
 
                             Spacer()
 
-                            Text("ACTIVE NODES: \(filteredConfigs.count)")
+                            Text(localizationHelper.string(for: "ACTIVE_NODES") + ": \(filteredConfigs.count)")
                                 .font(.system(size: 10, weight: .bold, design: .monospaced))
                                 .foregroundColor(AppConstants.Colors.cyberGreen)
                                 .shadow(color: AppConstants.Colors.cyberGreen, radius: 3)
@@ -261,7 +265,7 @@ struct ContentView: View {
                                         onCopy: { copyConfigCommand(config) },
                                         onDuplicate: {
                                             let newConfig = Config(
-                                                name: "\(config.name) 副本",
+                                                name: localizationHelper.string(for: "CONFIG_DUPLICATED", arguments: config.name),
                                                 apiUrl: config.apiUrl,
                                                 apiKey: config.apiKey,
                                                 workingDirectory: config.workingDirectory,
@@ -314,7 +318,7 @@ struct ContentView: View {
                                 .font(.system(size: 20, weight: .black, design: .monospaced))
                                 .foregroundColor(.black)
 
-                            Text("CREATE NEW CONFIG")
+                            Text(localizationHelper.string(for: "CREATE_NEW_CONFIG"))
                                 .font(.system(size: 14, weight: .bold, design: .monospaced))
                                 .foregroundColor(.black)
                         }
@@ -345,11 +349,11 @@ struct ContentView: View {
                     // 系统信息面板
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("SYSTEM_ARCHITECT: \(AppConstants.developer)")
+                            Text(localizationHelper.string(for: "SYSTEM_ARCHITECT") + ": \(AppConstants.developer)")
                                 .font(.system(size: 9, weight: .medium, design: .monospaced))
                                 .foregroundColor(AppConstants.Colors.textSecondary)
 
-                            Text("CONTACT_PROTOCOL: \(AppConstants.developerEmail)")
+                            Text(localizationHelper.string(for: "CONTACT_PROTOCOL") + ": \(AppConstants.developerEmail)")
                                 .font(.system(size: 8, weight: .regular, design: .monospaced))
                                 .foregroundColor(AppConstants.Colors.textSecondary.opacity(0.7))
                         }
@@ -363,7 +367,7 @@ struct ContentView: View {
                                 .frame(width: 6, height: 6)
                                 .shadow(color: AppConstants.Colors.cyberGreen, radius: 2)
 
-                            Text("READY")
+                            Text(localizationHelper.string(for: "READY"))
                                 .font(.system(size: 8, weight: .bold, design: .monospaced))
                                 .foregroundColor(AppConstants.Colors.cyberGreen)
                         }
@@ -409,28 +413,28 @@ struct ContentView: View {
                 editingGroup = nil
             }
         }
-        .alert("删除分组", isPresented: $showingDeleteGroupAlert) {
-            Button("取消", role: .cancel) { }
-            Button("删除", role: .destructive) {
+        .alert(localizationHelper.string(for: "DELETE_GROUP"), isPresented: $showingDeleteGroupAlert) {
+            Button(localizationHelper.string(for: "CANCEL"), role: .cancel) { }
+            Button(localizationHelper.string(for: "DELETE"), role: .destructive) {
                 if let group = groupToDelete {
                     deleteGroup(group)
                 }
             }
         } message: {
-            Text("确定要删除分组 \"\(groupToDelete?.name ?? "")\" 吗？该分组的所有配置将移到默认分组。")
+            Text(localizationHelper.string(for: "DELETE_GROUP_CONFIRMATION", arguments: groupToDelete?.name ?? ""))
         }
-        .alert("删除配置", isPresented: $showingDeleteConfigAlert) {
-            Button("取消", role: .cancel) { }
-            Button("删除", role: .destructive) {
+        .alert(localizationHelper.string(for: "DELETE_CONFIG"), isPresented: $showingDeleteConfigAlert) {
+            Button(localizationHelper.string(for: "CANCEL"), role: .cancel) { }
+            Button(localizationHelper.string(for: "DELETE"), role: .destructive) {
                 if let config = configToDelete {
                     configs.removeAll { $0.id == config.id }
                     configManager.saveConfigs(configs)
-                    toastManager.showToast("配置已删除")
+                    toastManager.showToast(localizationHelper.string(for: "CONFIG_DELETED"))
                     configToDelete = nil
                 }
             }
         } message: {
-            Text("确定要删除配置 \"\(configToDelete?.name ?? "")\" 吗？此操作不可撤销。")
+            Text(localizationHelper.string(for: "DELETE_CONFIG_CONFIRMATION", arguments: configToDelete?.name ?? ""))
         }
         .overlay(
             CyberpunkToast(
@@ -441,6 +445,10 @@ struct ContentView: View {
                 }
             )
         )
+        .languageAware()
+        .onReceive(localizationHelper.$refreshTrigger) { _ in
+            // Force view refresh when language changes
+        }
     }
 
     private func loadConfigs() {
@@ -463,7 +471,7 @@ struct ContentView: View {
 
     private func copyConfigCommand(_ config: Config) {
         launcher.copyLaunchCommand(config)
-        toastManager.showToast("启动命令已复制到剪贴板")
+        toastManager.showToast(localizationHelper.string(for: "LAUNCH_COMMAND_COPIED"))
     }
 
     private func saveGroup(_ group: ConfigGroup) {
@@ -495,6 +503,7 @@ struct CollapsibleGroupSelector: View {
     let onEditGroup: (ConfigGroup) -> Void
     let onDeleteGroup: (ConfigGroup) -> Void
     let getGroupColor: (String) -> Color
+    @StateObject private var localizationHelper = LocalizationHelper.shared
 
     @State private var isExpanded = false
 
@@ -508,8 +517,8 @@ struct CollapsibleGroupSelector: View {
                             .font(.system(size: 12, weight: .bold, design: .monospaced))
                             .foregroundColor(AppConstants.Colors.cyberGreen)
 
-                        Text(selectedGroupId == nil ? "all groups(\(configs.count))" :
-                             (groups.first { $0.id == selectedGroupId }?.name ?? "未知分组"))
+                        Text(selectedGroupId == nil ? localizationHelper.string(for: "ALL_GROUPS") + "(\(configs.count))" :
+                             (groups.first { $0.id == selectedGroupId }?.name ?? localizationHelper.string(for: "UNKNOWN_GROUP")))
                             .font(.system(size: 14, weight: .bold, design: .monospaced))
                             .foregroundColor(.white)
                     }
@@ -539,7 +548,7 @@ struct CollapsibleGroupSelector: View {
                 VStack(spacing: 8) {
                     // 全部配置选项
                     GroupOptionRow(
-                        name: "all groups",
+                        name: localizationHelper.string(for: "ALL_GROUPS"),
                         count: configs.count,
                         color: AppConstants.Colors.cyberBlue,
                         isSelected: selectedGroupId == nil,
@@ -635,6 +644,7 @@ struct ConfigRowView: View {
     let onDuplicate: () -> Void
     let getGroupColor: (String) -> Color
     let onShowToast: (String) -> Void
+    @StateObject private var localizationHelper = LocalizationHelper.shared
 
     var body: some View {
         ZStack {
@@ -694,7 +704,7 @@ struct ConfigRowView: View {
                             HStack(spacing: 4) {
                                 Text("⚠")
                                     .font(.system(size: 10, weight: .bold))
-                                Text("DANGER_MODE")
+                                Text(localizationHelper.string(for: "DANGER_MODE"))
                                     .font(.system(size: 9, weight: .black, design: .monospaced))
                             }
                             .foregroundColor(AppConstants.Colors.cyberRed)
@@ -706,7 +716,7 @@ struct ConfigRowView: View {
                             .frame(width: 6, height: 6)
                             .shadow(color: AppConstants.Colors.cyberGreen, radius: 2)
 
-                        Text("ACTIVE")
+                        Text(localizationHelper.string(for: "ACTIVE"))
                             .font(.system(size: 8, weight: .bold, design: .monospaced))
                             .foregroundColor(AppConstants.Colors.cyberGreen)
                     }
@@ -722,7 +732,7 @@ struct ConfigRowView: View {
 
                     // 路径信息
                     HStack {
-                        Text("PATH:")
+                        Text(localizationHelper.string(for: "PATH"))
                             .font(.system(size: 10, weight: .bold, design: .monospaced))
                             .foregroundColor(AppConstants.Colors.cyberGreen)
 
@@ -735,7 +745,7 @@ struct ConfigRowView: View {
 
                     // API信息
                     HStack {
-                        Text("API:")
+                        Text(localizationHelper.string(for: "API"))
                             .font(.system(size: 10, weight: .bold, design: .monospaced))
                             .foregroundColor(AppConstants.Colors.cyberGreen)
 
@@ -752,7 +762,7 @@ struct ConfigRowView: View {
                     Button(action: {
                         onCopy()
                     }) {
-                        Text("[COPY_CMD]")
+                        Text(localizationHelper.string(for: "COPY_CMD"))
                             .font(.system(size: 10, weight: .black, design: .monospaced))
                             .foregroundColor(.black)
                             .padding(.horizontal, 12)
@@ -770,9 +780,9 @@ struct ConfigRowView: View {
 
                     Button(action: {
                         onDuplicate()
-                        onShowToast("已创建 \(config.name) 副本")
+                        onShowToast(localizationHelper.string(for: "CONFIG_DUPLICATED", arguments: config.name))
                     }) {
-                        Text("[DUPLICATE]")
+                        Text(localizationHelper.string(for: "DUPLICATE"))
                             .font(.system(size: 10, weight: .black, design: .monospaced))
                             .foregroundColor(.black)
                             .padding(.horizontal, 12)
@@ -798,7 +808,7 @@ struct ConfigRowView: View {
                                     .progressViewStyle(CircularProgressViewStyle(tint: .black))
                             }
                             
-                            Text(launcher.isLaunching ? "[LAUNCHING...]" : "[LAUNCH]")
+                            Text(launcher.isLaunching ? localizationHelper.string(for: "LAUNCHING") : localizationHelper.string(for: "LAUNCH"))
                                 .font(.system(size: 10, weight: .black, design: .monospaced))
                                 .foregroundColor(.black)
                         }
@@ -819,7 +829,7 @@ struct ConfigRowView: View {
                     Button(action: {
                         onEdit()
                     }) {
-                        Text("[EDIT]")
+                        Text(localizationHelper.string(for: "EDIT"))
                             .font(.system(size: 10, weight: .black, design: .monospaced))
                             .foregroundColor(.black)
                             .padding(.horizontal, 12)
@@ -838,7 +848,7 @@ struct ConfigRowView: View {
                     Button(action: {
                         onDelete()
                     }) {
-                        Text("[DELETE]")
+                        Text(localizationHelper.string(for: "DELETE"))
                             .font(.system(size: 10, weight: .black, design: .monospaced))
                             .foregroundColor(.black)
                             .padding(.horizontal, 12)
