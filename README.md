@@ -27,6 +27,12 @@ A clean and efficient native macOS application for managing multiple Claude Code
 - 🎨 **Modern UI** - Native macOS interface built with SwiftUI
 - 💾 **Local Storage** - Configuration data securely stored in local JSON files
 
+## 📸 Screenshots
+
+| Main Interface | Configuration Editor | Group Management |
+|:--------------:|:--------------------:|:----------------:|
+| ![Main Interface](images/1.png) | ![Configuration Editor](images/2.png) | ![Group Management](images/3.png) |
+
 ## 🚀 Quick Start
 
 ### Requirements
